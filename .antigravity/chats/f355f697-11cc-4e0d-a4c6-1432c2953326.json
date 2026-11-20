@@ -184,6 +184,54 @@
       "created_at": "2026-11-20T00:05:09.674Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "7ab567e5-3bd7-479a-8567-0584d45c5de9",
+      "role": "agent",
+      "content": "تم بناء **لوحة التحكم (Dashboard) الاحترافية بالكامل** لحقل خباز النفطي (`Khabbaz Field Wells`) بناءً على ملفك بدقة عالية وتم حفظها في المشروع! 🎉\n\n---\n\n### 🌟 ماذا تم إنجازه في لوحة التحكم:\n\n1. **تفريغ جميع بيانات ملف الإكسل (Natural Flow Data):**\n   - استخراج وتضمين قراءات جميع الآبار في الصورة: **Well 33, 11, 35, 015, 25, 22, 43**.\n   - تسجيل كامل المتغيرات: `Choke Size`, `WHP (Psig)`, `NOC Prod`, `OT Prod Rate`, `Deviation`, `Gas Rate (MMSCFD)`, `Water STB/D`, `Sp.Gr`, `API°`, و `BS&W%`.\n\n2. **بطاقات المؤشرات الرئيسية (KPIs Cards):**\n   - إجمالي إنتاج النفط الميداني (`OT Prod Rate STB/D`).\n   - معدل تدفق الغاز الكلي (`Gas Flow Rate MMSCFD`).\n   - متوسط ضغط رأس البئر (`Wellhead Pressure WHP`).\n   - جودة النفط ومتوسط كثافة (`API°`).\n   - حجم الماء المصاحب المنتج (`Water Cut / Rate`).\n   - عدد الآبار العاملة.\n\n3. **رسوم بيانية تفاعلية (Interactive Charts):**\n   - **مقارنة إنتاج النفط والغاز** لكل بئر بأعمدة مدمجة ملونة.\n   - **مخطط أداء وسلوك الضغط** مقابل أحجام الخوانق (Choke Sizes).\n   - **مخطط الانحراف الفعلي (Deviation)** عن المستهدف (أخضر للموجب وأحمر للسالب).\n   - **مخطط دائري (Donut Chart)** يوضح حصة كل بئر من إجمالي إنتاج الحقل.\n\n4. **فلاتر وبحث فوري:**\n   - فلترة حسب رقم البئر (Well 33, 11, إلخ).\n   - فلترة حسب حجم الخانق (Choke Size).\n   - مربع بحث سريع بالاسم أو التاريخ.\n\n5. **خاصية رفع ملفات إكسل جديدة مباشرة:**\n   - أضفت لك في أعلى الصفحة زر **«رفع ملف إكسل جديد (.xlsx)»** مزود بمكتبة `SheetJS`، بحيث تستطيع في أي وقت اختيار أي ملف إكسل جديد من الآيفون مباشرة ليقوم الداشبورد بتحديث الأرقام والرسوم فوراً دون الحاجة لكتابة أي كود!\n\n---\n\nكل شيء تم حفظه الآن في مستودع GitHub الخاص بمشروعك في ملف [index.html](https://github.com/waleedkhalid085-beep/build-a-landing-page-for-my/blob/main/index.html).",
+      "status": "completed",
+      "model": "gemini-3.8-flash-low",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "6c93077e-eb2e-4b15-a748-966757e3c453",
+      "created_at": "2026-11-20T00:06:56.908Z",
+      "sender": "macOS",
+      "is_cancelled": false
+    },
+    {
+      "id": "8c68a139-5f40-4b8d-ac4d-30afbde2b229",
+      "role": "user",
+      "content": "اين تم حفظه؟ اين اجد مستودع github",
+      "status": "pending",
+      "model": "gemini-3.8-flash-low",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-11-20T00:08:40.334Z",
+      "sender": "ios",
+      "is_cancelled": false
+    },
+    {
+      "id": "68382bf0-8ff3-4515-b565-a5273ef972f3",
+      "role": "agent",
+      "content": "تم حفظه في مستودع GitHub الخاص بك مباشرة على الرابط التالي:\n\n🔗 **رابط المستودع على GitHub:**\n**https://github.com/waleedkhalid085-beep/build-a-landing-page-for-my**\n\n---\n\n### كيف تجده وتفتحه من هاتفك الآن؟\n\n1. **من داخل نفس الشاشة في تطبيقك:**\n   - انظر إلى **أعلى الشاشة في الزاوية العلوية اليمنى** (كما كان ظاهراً في لقطات الشاشة التي أرسلتها):\n   - ستجد أيقونة قطة GitHub السوداء وبجانبها اسم المستودع: `build-a-landing-page-for-my` أو النقاط الثلاث `•••`. بالضغط عليها سينقلك مباشرة للمستودع.\n\n2. **أو عبر المتصفح (Safari / Chrome):**\n   - افتح الرابط مباشرة: [مستودع مشروعك على GitHub](https://github.com/waleedkhalid085-beep/build-a-landing-page-for-my).\n   - ستجد بداخله ملفاً جديداً باسم **`index.html`** وهو ملف الداشبورد الكامل.\n\n---\n\n> 💡 **نصيحة لتشغيل الداشبورد كموقع مباشر مجاني (GitHub Pages):**\n> 1. ادخل على رابط المستودع أعلاه.\n> 2. اضغط على **Settings (الإعدادات)** ثم **Pages** من القائمة الجانبية.\n> 3. تحت خيار **Branch**، اختر `main` واضغط **Save**.\n> 4. سيعطيك GitHub خلال دقيقة واحدة رابطاً مباشراً يمكنك فتحه من سفاري على الآيفون ومشاركته مع أي شخص ليعمل الداشبورد فوراً!",
+      "status": "completed",
+      "model": "gemini-3.8-flash-low",
+      "client_type": "gemini-bridge",
+      "parent_message_id": "8c68a139-5f40-4b8d-ac4d-30afbde2b229",
+      "created_at": "2026-11-20T00:08:49.705Z",
+      "sender": "macOS",
+      "is_cancelled": false
+    },
+    {
+      "id": "86a646b9-6455-425e-9321-6a5ea1e540d2",
+      "role": "user",
+      "content": "اجعلها داش بورت محترف عن طريق power bi",
+      "status": "pending",
+      "model": "gemini-3.8-flash-low",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-11-20T00:10:39.699Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
