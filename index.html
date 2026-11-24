@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Khabbaz Oil Field - Wells Flow & Peak Testing Surveillance Dashboard</title>
+  <title>Khabbaz Oil Field - Peak Well Production Dashboard (Highest OT Prod)</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -65,10 +65,10 @@
         </div>
         <div>
           <div class="flex items-center gap-2.5 flex-wrap">
-            <h1 class="text-lg sm:text-xl font-black text-white tracking-wide" data-i18n="appTitle">Khabbaz Oil Field - Wells Surveillance Dashboard</h1>
-            <span class="text-[11px] bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider" data-i18n="verifiedBadge">Verified Exact Data</span>
+            <h1 class="text-lg sm:text-xl font-black text-white tracking-wide" data-i18n="appTitle">Khabbaz Oil Field - Peak Well Production Dashboard</h1>
+            <span class="text-[11px] bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider" data-i18n="peakBadge">Highest OT Prod Rate Mode</span>
           </div>
-          <p class="text-xs text-slate-400" data-i18n="appSubtitle">Surveillance of Khabbaz 7 wells & peak flow capacity based on highest tested OT Prod Rate</p>
+          <p class="text-xs text-slate-400" data-i18n="appSubtitle">Strictly using the highest tested OT Prod Rate (and its exact test point parameters) for each of the 7 wells</p>
         </div>
       </div>
 
@@ -110,36 +110,31 @@
     </div>
   </header>
 
-  <!-- Sub-Header: Mode Selector & Scope -->
+  <!-- Sub-Header: Scope & Data View Toggle -->
   <nav class="bg-slate-900/60 border-b border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2.5">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 overflow-x-auto custom-scrollbar">
       
       <!-- View Scope Pills -->
       <div class="flex items-center gap-2 min-w-max">
-        <button id="btnScopeAll" onclick="selectWellFilter('ALL')" class="px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-2 border transition-all bg-sky-600 text-white font-bold border-sky-500 shadow-md">
-          <i class="fa-solid fa-layer-group"></i>
-          <span data-i18n="scopeAllWells">All 7 Khabbaz Wells</span>
-        </button>
-
-        <div class="h-4 w-px bg-slate-700 mx-1"></div>
-
-        <!-- Mode Toggle: Highest OT Prod vs Average -->
+        
+        <!-- Table Scope Toggle: 7 Peak Wells vs All 28 Tests -->
         <div class="flex items-center bg-slate-800 p-0.5 rounded-xl border border-slate-700 text-xs">
-          <button id="btnModeMax" onclick="setAggregationMode('max')" class="px-3 py-1 rounded-lg font-bold transition flex items-center gap-1.5 bg-emerald-600 text-white shadow">
-            <i class="fa-solid fa-bolt-lightning text-amber-300"></i>
-            <span data-i18n="modeMaxProd">Highest Tested OT Prod (Peak)</span>
+          <button id="btnViewPeak" onclick="setTableViewMode('peak')" class="px-3.5 py-1.5 rounded-lg font-bold transition flex items-center gap-2 bg-amber-500 text-slate-950 shadow">
+            <i class="fa-solid fa-crown text-slate-950"></i>
+            <span data-i18n="viewPeakBtn">Only Highest Tested OT Prod (7 Wells)</span>
           </button>
-          <button id="btnModeAll" onclick="setAggregationMode('all')" class="px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5">
-            <i class="fa-solid fa-calculator"></i>
-            <span data-i18n="modeAvgProd">All Test Points / Average</span>
+          <button id="btnViewAll" onclick="setTableViewMode('all')" class="px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-2">
+            <i class="fa-solid fa-list-check"></i>
+            <span data-i18n="viewAllBtn">All 28 Flow Test Points</span>
           </button>
         </div>
+
       </div>
 
       <!-- Scope Indicator Badge -->
       <div class="flex items-center gap-2 shrink-0 text-xs">
-        <span class="text-slate-400" data-i18n="fieldLabel">Field:</span>
-        <span class="px-2.5 py-1 rounded-lg bg-sky-950/80 text-sky-300 border border-sky-800/60 font-bold" data-i18n="khabbazFieldText">Khabbaz Oil Field (حقل خباز)</span>
+        <span class="text-slate-400" data-i18n="currentScopeLabel">Active Wells:</span>
+        <span class="px-2.5 py-1 rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 font-bold font-mono">7 Khabbaz Wells (Natural Flow)</span>
       </div>
 
     </div>
@@ -149,38 +144,38 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
 
     <!-- Active Field Status & Peak Capacity Banner -->
-    <div class="bg-gradient-to-r from-slate-900 via-sky-950/40 to-slate-900 border border-sky-800/40 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="bg-gradient-to-r from-slate-900 via-amber-950/30 to-slate-900 border border-amber-800/40 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl shrink-0">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 text-slate-950 flex items-center justify-center text-2xl font-black shadow-lg shadow-amber-500/20 shrink-0">
           <i class="fa-solid fa-trophy"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-base font-black text-white" data-i18n="peakCapacityTitle">Khabbaz Field Peak Tested Capacity: 12,735 STB/D</span>
-            <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold font-mono">Sum of Peak Well Tests</span>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="text-lg font-black text-white" data-i18n="bannerTitle">Khabbaz Field Peak Capacity: 12,735 STB/D</span>
+            <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold font-mono">Peak OT Rate Sum</span>
           </div>
-          <p class="text-xs text-slate-400 mt-1" data-i18n="peakCapacityDesc">
-            Calculated directly from the highest OT Prod Rate test point of each of the 7 wells (Well 35, 11, 33, 43, 25, 015, 22) in Khabaz_updated.xlsx.
+          <p class="text-xs text-slate-300 mt-1" data-i18n="bannerDesc">
+            Strictly calculated from the single highest tested OT Prod Rate row of each of the 7 wells (Well 35, 11, 33, 43, 25, 015, 22) and their corresponding parameters.
           </p>
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0 text-xs">
-        <span class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 font-mono" id="peakGasBadge">Peak Gas: 33.16 MMSCFD</span>
-        <span class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 font-mono" id="recordCountBadge">28 Natural Flow Tests</span>
+        <span class="px-3 py-1.5 rounded-xl bg-slate-800 text-amber-300 border border-slate-700 font-mono font-bold" id="bannerGasText">Total Gas: 33.16 MMSCFD</span>
+        <span class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 font-mono font-bold" id="bannerWellsCount">7 Wells Active</span>
       </div>
     </div>
 
-    <!-- 7 Wells Breakdown Grid (Displaying each well's Peak OT Prod Rate) -->
+    <!-- 7 Wells Breakdown Grid (Each Well with its exact Peak OT Test) -->
     <section class="space-y-3">
       <div class="flex items-center justify-between">
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-          <i class="fa-solid fa-bore-hole text-sky-400"></i>
-          <span data-i18n="wellsBreakdownTitle">The 7 Khabbaz Wells Breakdown (Highest Tested OT Prod)</span>
+          <i class="fa-solid fa-crown text-amber-400"></i>
+          <span data-i18n="gridTitle">The 7 Khabbaz Wells (Highest Tested OT Prod Rate & Parameters)</span>
         </h2>
-        <span class="text-xs text-slate-500" data-i18n="wellsBreakdownSubtitle">Click any well card to isolate its tests and history</span>
+        <span class="text-xs text-slate-500" data-i18n="gridSubtitle">Click any well card to filter the dashboard</span>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3" id="wellsQuickCards">
-        <!-- Dynamically populated 7 well cards with rank, max STB/D, best choke, test date -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3" id="wellsPeakCards">
+        <!-- Dynamically rendered 7 cards -->
       </div>
     </section>
 
@@ -236,7 +231,7 @@
       </div>
     </section>
 
-    <!-- Top Key Performance Indicators (6 KPI Cards) -->
+    <!-- Top Key Performance Indicators (6 KPI Cards based strictly on Peak tests) -->
     <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
       
       <!-- KPI 1: Active Wells -->
@@ -247,7 +242,7 @@
         <i class="fa-solid fa-bore-hole absolute ltr:right-3 rtl:left-3 bottom-3 text-2xl text-slate-800/60 group-hover:text-sky-500/10 transition"></i>
       </div>
 
-      <!-- KPI 2: Total Oil Production -->
+      <!-- KPI 2: Total Oil Production (Strict Peak Sum) -->
       <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow relative overflow-hidden group hover:border-emerald-500/50 transition">
         <div class="text-xs text-slate-400 font-medium" id="kpiOilTitle" data-i18n="kpiOilTitlePeak">Peak Field Oil Prod</div>
         <div class="text-2xl font-black text-emerald-400 mt-1" id="kpiTotalOil">12,735 <span class="text-xs text-slate-400 font-normal">STB/D</span></div>
@@ -289,10 +284,10 @@
 
     </section>
 
-    <!-- Interactive Charts Grid (2x2) -->
+    <!-- Interactive Charts Grid (2x2) based on Highest Tested OT Prod -->
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <!-- Chart 1: Production Comparison by Well (Highest Tested OT Prod Rate) -->
+      <!-- Chart 1: Highest Tested OT Prod Rate by Well -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
         <div class="flex items-center justify-between mb-4">
           <div>
@@ -300,7 +295,7 @@
               <i class="fa-solid fa-chart-column text-sky-400"></i>
               <span>Highest Tested OT Prod Rate & Gas Flow by Well</span>
             </h3>
-            <p class="text-xs text-slate-400" id="chart1Subtitle">Comparing peak tested capacity for each of the 7 wells (STB/D vs MMSCFD)</p>
+            <p class="text-xs text-slate-400" id="chart1Subtitle">Peak tested STB/D rate and corresponding MMSCFD gas flow for each well</p>
           </div>
         </div>
         <div class="relative h-72">
@@ -316,7 +311,7 @@
               <i class="fa-solid fa-chart-pie text-purple-400"></i>
               <span>Peak Well Production Share (%)</span>
             </h3>
-            <p class="text-xs text-slate-400" id="chart2Subtitle">Contribution percentage of each well to total field capacity (12,735 STB/D)</p>
+            <p class="text-xs text-slate-400" id="chart2Subtitle">Percentage contribution of each well to total capacity (12,735 STB/D)</p>
           </div>
         </div>
         <div class="relative h-72">
@@ -324,7 +319,7 @@
         </div>
       </div>
 
-      <!-- Chart 3: Actual vs Target Quota (Deviation) -->
+      <!-- Chart 3: Actual vs Target Quota (Deviation) at Peak Test -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
         <div class="flex items-center justify-between mb-4">
           <div>
@@ -340,15 +335,15 @@
         </div>
       </div>
 
-      <!-- Chart 4: Pressure / Reservoir Diagnostics -->
+      <!-- Chart 4: Wellhead Pressure at Peak Test -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="font-bold text-white text-base flex items-center gap-2" id="chart4Title">
               <i class="fa-solid fa-chart-line text-emerald-400"></i>
-              <span>Wellhead Pressure Behavior (WHP Psig)</span>
+              <span>Wellhead Flowing Pressure at Peak Flow (Psig)</span>
             </h3>
-            <p class="text-xs text-slate-400" id="chart4Subtitle">Surface pressure response across choke sizes</p>
+            <p class="text-xs text-slate-400" id="chart4Subtitle">WHP and Flowing Prod WH.P for each well at its highest tested rate</p>
           </div>
         </div>
         <div class="relative h-72">
@@ -364,18 +359,18 @@
       <!-- Table Header & Summary Controls -->
       <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
             <i class="fa-solid fa-table-list"></i>
           </div>
           <div>
-            <h3 class="font-bold text-white text-base" data-i18n="tableTitle">Complete Well Test & Surveillance Records</h3>
-            <p class="text-xs text-slate-400" data-i18n="tableSubtitle">Natural flow and choke performance test logs (28 records)</p>
+            <h3 class="font-bold text-white text-base" id="tableMainTitle" data-i18n="tableTitlePeak">Highest Tested OT Prod Records (7 Wells)</h3>
+            <p class="text-xs text-slate-400" id="tableMainSubtitle" data-i18n="tableSubtitlePeak">Showing each well's single highest production test row with exact test point parameters</p>
           </div>
         </div>
         
         <div class="flex items-center gap-2 text-xs">
           <span class="text-slate-400" data-i18n="tableShowing">Showing:</span>
-          <span class="font-black text-sky-400 text-sm px-2 py-0.5 rounded bg-sky-950 border border-sky-800" id="filteredRowsCount">0</span>
+          <span class="font-black text-amber-400 text-sm px-2 py-0.5 rounded bg-amber-950/60 border border-amber-800/60 font-mono" id="filteredRowsCount">7</span>
           <span class="text-slate-400" data-i18n="tableRecords">records</span>
         </div>
       </div>
@@ -489,12 +484,12 @@
         <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
           <h4 class="text-sm font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-file-csv text-emerald-400"></i>
-            <span data-i18n="pbiExportTitle">Cleaned Khabbaz Dataset (CSV)</span>
+            <span data-i18n="pbiExportTitle">Cleaned Khabbaz Peak Dataset (CSV)</span>
           </h4>
-          <p class="text-xs text-slate-400" data-i18n="pbiExportDesc">Standardized English column names matching the Power BI guide for seamless import:</p>
+          <p class="text-xs text-slate-400" data-i18n="pbiExportDesc">The 7 wells peak production dataset ready for immediate Power BI model ingestion:</p>
           <button id="downloadPbiCsvBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition">
             <i class="fa-solid fa-download"></i>
-            <span data-i18n="downloadDatasetBtn">Download Khabbaz_Cleaned_Data.csv</span>
+            <span data-i18n="downloadDatasetBtn">Download Khabbaz_Peak_Wells_Data.csv</span>
           </button>
         </div>
       </div>
@@ -505,7 +500,7 @@
   <!-- Footer -->
   <footer class="bg-slate-900 border-t border-slate-800 py-5 mt-10 text-center text-xs text-slate-500">
     <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p data-i18n="footerText">Khabbaz Oil Field Surveillance Dashboard • Authentic Natural Flow Data • Saved to GitHub</p>
+      <p data-i18n="footerText">Khabbaz Oil Field Surveillance Dashboard • Peak Well Flow Analytics • Saved to GitHub</p>
       <div class="flex items-center gap-2 text-slate-400" id="footerWellsList">
         <!-- Rendered by JS -->
       </div>
@@ -515,9 +510,146 @@
   <!-- Application Script -->
   <script>
     // -------------------------------------------------------------
-    // 1. Initial Dataset (Exact 28 records from user's image)
+    // 1. Datasets
     // -------------------------------------------------------------
-    const initialDataset = [
+    // PRIMARY: Strictly the 7 Peak Well Records
+    const peakDataset = [
+  {
+    "well": "33",
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "date": "15/8/2026",
+    "choke": "42/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1270.0,
+    "nocProd": 750.0,
+    "otProdRate": 2246.0,
+    "deviation": 1496.0,
+    "prodWHP": 1064.0,
+    "gasRate": 3.781,
+    "water": 5.0,
+    "spGr": 0.845,
+    "api": 36.0,
+    "bsw": 0.2
+  },
+  {
+    "well": "11",
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "date": "27/8/2026",
+    "choke": "34/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1170.0,
+    "nocProd": 750.0,
+    "otProdRate": 2459.0,
+    "deviation": 1709.0,
+    "prodWHP": 1158.0,
+    "gasRate": 3.007,
+    "water": 3.8,
+    "spGr": 0.881,
+    "api": 29.0,
+    "bsw": 0.15
+  },
+  {
+    "well": "35",
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "date": "7/9/2026",
+    "choke": "48/64",
+    "otChoke": "NA",
+    "type": "T",
+    "whp": 1312.0,
+    "nocProd": 1200.0,
+    "otProdRate": 2671.0,
+    "deviation": 1471.0,
+    "prodWHP": 1218.0,
+    "gasRate": 3.037,
+    "water": 0.0,
+    "spGr": 0.882,
+    "api": 28.9,
+    "bsw": 0.0
+  },
+  {
+    "well": "015",
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "date": "16/9/2026",
+    "choke": "58/64",
+    "otChoke": "NA",
+    "type": "T",
+    "whp": 850.0,
+    "nocProd": 1000.0,
+    "otProdRate": 1147.0,
+    "deviation": 147.0,
+    "prodWHP": 841.0,
+    "gasRate": 11.638,
+    "water": 0.0,
+    "spGr": 0.807,
+    "api": 44.0,
+    "bsw": 0.0
+  },
+  {
+    "well": "25",
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "date": "14/10/2026",
+    "choke": "30/64",
+    "otChoke": "NA",
+    "type": "T",
+    "whp": 1312.0,
+    "nocProd": 1850.0,
+    "otProdRate": 1169.0,
+    "deviation": -681.0,
+    "prodWHP": 1197.0,
+    "gasRate": 3.311,
+    "water": 142.9,
+    "spGr": 0.869,
+    "api": 31.3,
+    "bsw": 11.0
+  },
+  {
+    "well": "22",
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "date": "24/10/2026",
+    "choke": "32/64",
+    "otChoke": "NA",
+    "type": "T",
+    "whp": 1360.0,
+    "nocProd": 1000.0,
+    "otProdRate": 958.0,
+    "deviation": -42.0,
+    "prodWHP": 1214.0,
+    "gasRate": 3.778,
+    "water": 0.0,
+    "spGr": 0.853,
+    "api": 34.4,
+    "bsw": 0.0
+  },
+  {
+    "well": "43",
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "date": "5/11/2026",
+    "choke": "40/64",
+    "otChoke": "NA",
+    "type": "T",
+    "whp": 1250.0,
+    "nocProd": 900.0,
+    "otProdRate": 2085.0,
+    "deviation": 1185.0,
+    "prodWHP": 1038.0,
+    "gasRate": 4.605,
+    "water": 0.0,
+    "spGr": 0.84,
+    "api": 36.9,
+    "bsw": 0.0
+  }
+];
+    // SECONDARY: All 28 test records if user toggles to view them
+    const allDataset = [
   {
     "well": "33",
     "field": "Khabbaz",
@@ -1052,9 +1184,9 @@
   }
 ];
 
-    let currentDataset = [...initialDataset];
+    let activeDataset = [...peakDataset];
+    let tableViewMode = 'peak'; // 'peak' (default, 7 rows) or 'all' (28 rows)
     let selectedWell = 'ALL';
-    let aggregationMode = 'max'; // 'max' (highest tested OT Prod) or 'all' (all test records)
     let currentLang = localStorage.getItem('dashboard_lang') || 'en';
     let charts = {};
 
@@ -1063,22 +1195,20 @@
     // -------------------------------------------------------------
     const i18n = {
       en: {
-        appTitle: "Khabbaz Oil Field - Wells Surveillance Dashboard",
-        verifiedBadge: "Verified Exact Data",
-        appSubtitle: "Surveillance of Khabbaz 7 wells & peak flow capacity based on highest tested OT Prod Rate",
+        appTitle: "Khabbaz Oil Field - Peak Well Production Dashboard",
+        peakBadge: "Highest OT Prod Rate Mode",
+        appSubtitle: "Strictly using the highest tested OT Prod Rate (and its exact test point parameters) for each of the 7 wells",
         powerBiHubBtn: "Power BI Hub",
         uploadExcelBtn: "Upload Excel (.xlsx)",
         exportCsvBtn: "Export CSV",
         printBtn: "Print",
-        scopeAllWells: "All 7 Khabbaz Wells",
-        modeMaxProd: "Highest Tested OT Prod (Peak)",
-        modeAvgProd: "All Test Points / Average",
-        fieldLabel: "Field:",
-        khabbazFieldText: "Khabbaz Oil Field (حقل خباز)",
-        peakCapacityTitle: "Khabbaz Field Peak Tested Capacity: 12,735 STB/D",
-        peakCapacityDesc: "Calculated directly from the highest OT Prod Rate test point of each of the 7 wells (Well 35, 11, 33, 43, 25, 015, 22) in Khabaz_updated.xlsx.",
-        wellsBreakdownTitle: "The 7 Khabbaz Wells Breakdown (Highest Tested OT Prod)",
-        wellsBreakdownSubtitle: "Click any well card to isolate its tests and history",
+        viewPeakBtn: "Only Highest Tested OT Prod (7 Wells)",
+        viewAllBtn: "All 28 Flow Test Points",
+        currentScopeLabel: "Active Wells:",
+        bannerTitle: "Khabbaz Field Peak Capacity: 12,735 STB/D",
+        bannerDesc: "Strictly calculated from the single highest tested OT Prod Rate row of each of the 7 wells (Well 35, 11, 33, 43, 25, 015, 22) and their corresponding parameters.",
+        gridTitle: "The 7 Khabbaz Wells (Highest Tested OT Prod Rate & Parameters)",
+        gridSubtitle: "Click any well card to filter the dashboard",
         filterWellLabel: "Well No:",
         filterChokeLabel: "Choke Size:",
         searchPlaceholder: "Search by Well, Date, Choke, Rate...",
@@ -1086,16 +1216,18 @@
         kpiWellsTitle: "Monitored Wells",
         kpiWellsSubtitle: "Khabbaz Field Wells",
         kpiOilTitlePeak: "Peak Field Oil Prod",
-        kpiOilTitleAll: "Total Oil Production",
+        kpiOilSubtitlePeak: "Sum of Highest OT Tests",
         kpiGasTitlePeak: "Peak Gas Flow Rate",
-        kpiGasTitleAll: "Total Gas Flow Rate",
+        kpiGasSubtitlePeak: "At Highest Oil Flows",
         kpiWhpTitle: "Avg Wellhead Pressure",
         kpiApiTitle: "Avg Crude Oil Gravity",
         kpiWaterTitle: "Produced Water",
         allWellsOption: "All 7 Wells (Combined)",
         allChokesOption: "All Chokes",
-        tableTitle: "Complete Well Test & Surveillance Records",
-        tableSubtitle: "Natural flow and choke performance test logs (28 records)",
+        tableTitlePeak: "Highest Tested OT Prod Records (7 Wells)",
+        tableSubtitlePeak: "Showing each well's single highest production test row with exact test point parameters",
+        tableTitleAll: "Complete Well Test & Surveillance Records",
+        tableSubtitleAll: "Natural flow and choke performance test logs (28 records)",
         tableShowing: "Showing:",
         tableRecords: "records",
         tableEmpty: "No matching records found for the selected filters.",
@@ -1107,10 +1239,10 @@
         pbiDaxDesc: "Copy and paste these pre-formulated DAX measures into Power BI Desktop for instant executive KPIs:",
         pbiEmbedDesc: "Paste your published Power BI report URL to display it directly here:",
         pbiPlaceholderNotice: "No Power BI URL entered. Enter a link above to display your online interactive report.",
-        pbiExportTitle: "Cleaned Khabbaz Dataset (CSV)",
-        pbiExportDesc: "Standardized English column names matching the Power BI guide for seamless import:",
-        downloadDatasetBtn: "Download Khabbaz_Cleaned_Data.csv",
-        footerText: "Khabbaz Oil Field Surveillance Dashboard • Authentic Natural Flow Data • Saved to GitHub",
+        pbiExportTitle: "Cleaned Khabbaz Peak Dataset (CSV)",
+        pbiExportDesc: "The 7 wells peak production dataset ready for immediate Power BI model ingestion:",
+        downloadDatasetBtn: "Download Khabbaz_Peak_Wells_Data.csv",
+        footerText: "Khabbaz Oil Field Surveillance Dashboard • Peak Well Flow Analytics • Saved to GitHub",
         // Table Columns
         colWell: "Well No.",
         colField: "Field",
@@ -1129,31 +1261,29 @@
         colBsw: "BS&W %",
         // Chart Titles
         chart1TitlePeak: "Highest Tested OT Prod Rate & Gas Flow by Well",
-        chart1SubPeak: "Comparing peak tested capacity for each of the 7 wells (STB/D vs MMSCFD)",
+        chart1SubPeak: "Peak tested STB/D rate and corresponding MMSCFD gas flow for each well",
         chart2TitlePeak: "Peak Well Production Share (%)",
-        chart2SubPeak: "Contribution percentage of each well to total field capacity (12,735 STB/D)",
+        chart2SubPeak: "Percentage contribution of each well to total capacity (12,735 STB/D)",
         chart3TitlePeak: "Production Deviation at Peak Tests",
         chart3SubPeak: "Over-quota (+) in green, Under-quota (-) in red against NOC targets",
-        chart4Title: "Wellhead Pressure Behavior (WHP Psig)",
-        chart4Sub: "Surface pressure response across choke sizes"
+        chart4TitlePeak: "Wellhead Flowing Pressure at Peak Flow (Psig)",
+        chart4SubPeak: "WHP and Flowing Prod WH.P for each well at its highest tested rate"
       },
       ar: {
-        appTitle: "داشبورد مراقبة وتحليل آبار حقل خباز النفطي",
-        verifiedBadge: "بيانات أصلية ومطابقة 100%",
-        appSubtitle: "مراقبة آبار خباز الـ 7 وحساب أعلى طاقة إنتاجية مفحوصة (Peak OT Prod Rate)",
+        appTitle: "داشبورد إنتاج آبار حقل خباز (بأعلى إنتاجية فحص)",
+        peakBadge: "نمط أعلى إنتاجية فحص OT Prod",
+        appSubtitle: "اعتماد أعلى فحص إنتاجي (OT Prod Rate) ومعلماته حصراً لكل بئر من الآبار الـ 7",
         powerBiHubBtn: "مركز Power BI",
         uploadExcelBtn: "رفع ملف إكسل (.xlsx)",
         exportCsvBtn: "تصدير CSV",
         printBtn: "طباعة",
-        scopeAllWells: "جميع آبار خباز الـ 7",
-        modeMaxProd: "أعلى إنتاجية فحص (Peak OT Prod)",
-        modeAvgProd: "كافة نقاط الفحوصات / المتوسط",
-        fieldLabel: "الحقل:",
-        khabbazFieldText: "حقل خباز النفطي (Khabbaz Field)",
-        peakCapacityTitle: "أعلى إنتاجية كلية مفحوصة لحقل خباز: 12,735 برميل/يوم",
-        peakCapacityDesc: "محسوبة بدقة عبر أخذ أعلى إنتاجية فحص (OT Prod Rate) لكل بئر من الآبار الـ 7 (Well 35, 11, 33, 43, 25, 015, 22) من ملفك.",
-        wellsBreakdownTitle: "تفصيل آبار حقل خباز الـ 7 (بأعلى إنتاجية فحص OT Prod)",
-        wellsBreakdownSubtitle: "اضغط على أي كرت بئر لعرض تاريخ فحوصاته وخوانقه بشكل منفصل",
+        viewPeakBtn: "أعلى إنتاجية فحص فقط (الآبار الـ 7)",
+        viewAllBtn: "كافة فحوصات الجريان الـ 28",
+        currentScopeLabel: "الآبار النشطة:",
+        bannerTitle: "أعلى طاقة إنتاجية كلية لحقل خباز: 12,735 برميل/يوم",
+        bannerDesc: "محسوبة بدقة عبر أخذ السطر صاحب أعلى إنتاجية فحص (OT Prod Rate) فقط لكل بئر من الآبار الـ 7 وتفاصيل معلماته الدقيقة.",
+        gridTitle: "آبار حقل خباز الـ 7 (بأعلى فحص إنتاجي OT Prod ومعلماته)",
+        gridSubtitle: "اضغط على أي كرت بئر لفلترة الداشبورد",
         filterWellLabel: "رقم البئر:",
         filterChokeLabel: "حجم الخانق:",
         searchPlaceholder: "بحث برقم البئر، التاريخ، الخانق، المعدل...",
@@ -1161,16 +1291,18 @@
         kpiWellsTitle: "عدد الآبار المراقبة",
         kpiWellsSubtitle: "آبار حقل خباز",
         kpiOilTitlePeak: "أعلى إنتاجية كلية للحقل",
-        kpiOilTitleAll: "إجمالي إنتاج النفط",
+        kpiOilSubtitlePeak: "مجموع أعلى إنتاجية فحص للآبار",
         kpiGasTitlePeak: "أعلى معدل تدفق غاز",
-        kpiGasTitleAll: "إجمالي تدفق الغاز",
+        kpiGasSubtitlePeak: "عند أعلى تدفق نفطي للآبار",
         kpiWhpTitle: "متوسط ضغط رأس البئر",
         kpiApiTitle: "متوسط كثافة النفط الخام",
         kpiWaterTitle: "الماء المصاحب",
         allWellsOption: "جميع الآبار الـ 7 (شامل)",
         allChokesOption: "جميع الأحجام",
-        tableTitle: "جدول قراءات واختبارات الآبار الكامل",
-        tableSubtitle: "سجلات اختبارات الجريان الطبيعي وأداء الخوانق (28 فحصاً)",
+        tableTitlePeak: "سجلات أعلى إنتاجية فحص للآبار الـ 7 (Highest OT Prod)",
+        tableSubtitlePeak: "عرض السطر صاحب أعلى تدفق إنتاجي لكل بئر مع كافة معلماته الدقيقة من ملفك",
+        tableTitleAll: "جدول كافة قراءات واختبارات الآبار الكامل",
+        tableSubtitleAll: "سجلات اختبارات الجريان الطبيعي وأداء الخوانق (28 فحصاً)",
         tableShowing: "عرض:",
         tableRecords: "سجل",
         tableEmpty: "لا توجد سجلات مطابقة لمعايير البحث المحددة.",
@@ -1182,10 +1314,10 @@
         pbiDaxDesc: "انسخ معادلات DAX الجاهزة مباشرة والصقها في Power BI لحساب مؤشرات الإنتاج الفورية:",
         pbiEmbedDesc: "الصق رابط التقرير المنشور ليعمل التقرير مباشرة هنا:",
         pbiPlaceholderNotice: "لم يتم إدخال رابط Power BI. أدخل رابط التقرير التفاعلي أعلاه لعرضه هنا.",
-        pbiExportTitle: "ملف بيانات خباز المنظف (CSV)",
-        pbiExportDesc: "ملف يحتوي على بيانات آبار خباز مع أسماء أعمدة قياسية بالإنجليزية مطابقة لـ Power BI:",
-        downloadDatasetBtn: "تحميل ملف Khabbaz_Cleaned_Data.csv",
-        footerText: "داشبورد مراقبة آبار حقل خباز النفطي • بيانات الجريان الطبيعي الفعلية • محفوظ في GitHub",
+        pbiExportTitle: "ملف بيانات خباز المنظف للآبار الـ 7 (CSV)",
+        pbiExportDesc: "قاعدة بيانات أعلى إنتاجية للآبار الـ 7 جاهزة للاستيراد الفوري في Power BI:",
+        downloadDatasetBtn: "تحميل ملف Khabbaz_Peak_Wells_Data.csv",
+        footerText: "داشبورد مراقبة آبار حقل خباز النفطي • حسابات أعلى تدفق إنتاجي • محفوظ في GitHub",
         // Table Columns
         colWell: "رقم البئر",
         colField: "الحقل",
@@ -1209,8 +1341,8 @@
         chart2SubPeak: "نسبة مساهمة كل بئر من طاقة الحقل الإجمالية (12,735 برميل/يوم)",
         chart3TitlePeak: "انحراف الإنتاج عن المستهدف عند أعلى فحص",
         chart3SubPeak: "الفائض الإنتاجي (+) بالأخضر والعجز (-) بالأحمر مقارنة بحصة NOC",
-        chart4Title: "سلوك ضغط رأس البئر (WHP Psig)",
-        chart4Sub: "منحنى تغير الضغط عبر أحجام الخوانق المختلفة"
+        chart4TitlePeak: "ضغط رأس البئر عند أعلى تدفق (Psig)",
+        chart4SubPeak: "مقارنة WHP وضغط الجريان Prod WH.P لكل بئر عند أعلى فحص"
       }
     };
 
@@ -1219,21 +1351,7 @@
     }
 
     // -------------------------------------------------------------
-    // 3. Peak / Highest Tested OT Prod Extraction
-    // -------------------------------------------------------------
-    function getPeakRecordsPerWell(data) {
-      const map = {};
-      data.forEach(r => {
-        if (!map[r.well] || r.otProdRate > map[r.well].otProdRate) {
-          map[r.well] = r;
-        }
-      });
-      // Return sorted by peak rate descending
-      return Object.values(map).sort((a, b) => b.otProdRate - a.otProdRate);
-    }
-
-    // -------------------------------------------------------------
-    // 4. Language Switching Logic
+    // 3. Language Switching Logic
     // -------------------------------------------------------------
     function setLanguage(lang) {
       currentLang = lang;
@@ -1258,7 +1376,7 @@
       }
 
       updateTableHeaders();
-      renderWellsBreakdownCards();
+      renderWellsPeakCards();
       populateFilterOptions();
       applyFilters();
     }
@@ -1301,35 +1419,44 @@
     }
 
     // -------------------------------------------------------------
-    // 5. Aggregation Mode Selector (Peak vs All)
+    // 4. Table Scope Switcher (Peak 7 Rows vs All 28 Rows)
     // -------------------------------------------------------------
-    function setAggregationMode(mode) {
-      aggregationMode = mode;
-      const btnMax = document.getElementById('btnModeMax');
-      const btnAll = document.getElementById('btnModeAll');
+    function setTableViewMode(mode) {
+      tableViewMode = mode;
+      const btnPeak = document.getElementById('btnViewPeak');
+      const btnAll = document.getElementById('btnViewAll');
+      const tableTitle = document.getElementById('tableMainTitle');
+      const tableSubtitle = document.getElementById('tableMainSubtitle');
 
-      if (mode === 'max') {
-        btnMax.className = "px-3 py-1 rounded-lg font-bold transition flex items-center gap-1.5 bg-emerald-600 text-white shadow";
-        btnAll.className = "px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5";
+      if (mode === 'peak') {
+        activeDataset = [...peakDataset];
+        btnPeak.className = "px-3.5 py-1.5 rounded-lg font-bold transition flex items-center gap-2 bg-amber-500 text-slate-950 shadow";
+        btnAll.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-2";
+        tableTitle.textContent = t('tableTitlePeak');
+        tableSubtitle.textContent = t('tableSubtitlePeak');
       } else {
-        btnAll.className = "px-3 py-1 rounded-lg font-bold transition flex items-center gap-1.5 bg-sky-600 text-white shadow";
-        btnMax.className = "px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5";
+        activeDataset = [...allDataset];
+        btnAll.className = "px-3.5 py-1.5 rounded-lg font-bold transition flex items-center gap-2 bg-sky-600 text-white shadow";
+        btnPeak.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-400 hover:text-white transition flex items-center gap-2";
+        tableTitle.textContent = t('tableTitleAll');
+        tableSubtitle.textContent = t('tableSubtitleAll');
       }
 
+      populateFilterOptions();
       applyFilters();
     }
 
     // -------------------------------------------------------------
-    // 6. Wells Breakdown Grid (Highlighting Peak OT Prod)
+    // 5. 7 Wells Peak Cards Grid
     // -------------------------------------------------------------
-    function renderWellsBreakdownCards() {
-      const container = document.getElementById('wellsQuickCards');
+    function renderWellsPeakCards() {
+      const container = document.getElementById('wellsPeakCards');
       if (!container) return;
 
-      const peakRecords = getPeakRecordsPerWell(currentDataset);
-      const totalPeak = peakRecords.reduce((acc, c) => acc + c.otProdRate, 0) || 1;
+      const totalPeak = peakDataset.reduce((acc, c) => acc + c.otProdRate, 0) || 1;
+      const sortedByRate = [...peakDataset].sort((a, b) => b.otProdRate - a.otProdRate);
 
-      container.innerHTML = peakRecords.map((r, idx) => {
+      container.innerHTML = sortedByRate.map((r, idx) => {
         const isSelected = (selectedWell === r.well);
         const sharePct = ((r.otProdRate / totalPeak) * 100).toFixed(1);
         const rankColor = idx === 0 ? 'text-amber-400' : (idx === 1 ? 'text-slate-300' : (idx === 2 ? 'text-amber-600' : 'text-slate-500'));
@@ -1381,26 +1508,23 @@
       // Footer wells list
       const footerList = document.getElementById('footerWellsList');
       if (footerList) {
-        footerList.innerHTML = peakRecords.map(r => `<span class="hover:text-amber-400 cursor-pointer" onclick="selectWellFilter('${r.well}')">Well ${r.well} (${r.otProdRate} STB/D)</span>`).join('<span class="text-slate-600">&bull;</span>');
+        footerList.innerHTML = sortedByRate.map(r => `<span class="hover:text-amber-400 cursor-pointer" onclick="selectWellFilter('${r.well}')">Well ${r.well} (${r.otProdRate} STB/D)</span>`).join('<span class="text-slate-600">&bull;</span>');
       }
     }
 
     function selectWellFilter(w) {
       selectedWell = w;
       document.getElementById('wellFilterSelect').value = w;
-      renderWellsBreakdownCards();
+      renderWellsPeakCards();
       applyFilters();
     }
 
     // -------------------------------------------------------------
-    // 7. Filter & Slicers Logic
+    // 6. Filter & Slicers Logic
     // -------------------------------------------------------------
     function populateFilterOptions() {
-      const wellSelect = document.getElementById('wellFilterSelect');
       const chokeSelect = document.getElementById('chokeFilterSelect');
-
-      // Populate chokes
-      const uniqueChokes = [...new Set(currentDataset.map(d => d.choke).filter(Boolean))].sort();
+      const uniqueChokes = [...new Set(activeDataset.map(d => d.choke).filter(Boolean))].sort();
       chokeSelect.innerHTML = `<option value="ALL">${t('allChokesOption')}</option>`;
       uniqueChokes.forEach(c => {
         chokeSelect.innerHTML += `<option value="${c}">${c}</option>`;
@@ -1412,7 +1536,7 @@
       const chokeVal = document.getElementById('chokeFilterSelect').value;
       const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
 
-      return currentDataset.filter(item => {
+      return activeDataset.filter(item => {
         const matchWell = (wellVal === 'ALL' || item.well === wellVal);
         const matchChoke = (chokeVal === 'ALL' || item.choke === chokeVal);
         const matchSearch = !searchVal || 
@@ -1433,7 +1557,7 @@
     }
 
     // -------------------------------------------------------------
-    // 8. Render Data Table (LTR in English, RTL in Arabic)
+    // 7. Render Data Table (Strictly Left-to-Right in English)
     // -------------------------------------------------------------
     function renderTable(data) {
       const tbody = document.getElementById('dataTableBody');
@@ -1445,26 +1569,17 @@
         return;
       }
 
-      // Find peak record for each well to highlight in the table!
-      const peakMap = {};
-      data.forEach(r => {
-        if (!peakMap[r.well] || r.otProdRate > peakMap[r.well]) {
-          peakMap[r.well] = r.otProdRate;
-        }
-      });
-
       tbody.innerHTML = data.map((row) => {
         const fieldName = (currentLang === 'ar' ? 'حقل خباز' : 'Khabbaz');
         const devClass = row.deviation >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold';
         const devSign = row.deviation > 0 ? '+' : '';
-        const isPeak = (row.otProdRate === peakMap[row.well]);
 
         return `
-          <tr class="hover:bg-slate-800/60 transition border-b border-slate-800/80 ${isPeak ? 'bg-amber-500/5' : ''}">
+          <tr class="hover:bg-slate-800/60 transition border-b border-slate-800/80">
             <td class="py-2.5 px-3.5 text-center font-mono">
-              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold ${isPeak ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'}">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                 Well ${row.well}
-                ${isPeak ? '<i class="fa-solid fa-crown text-[9px] text-amber-400" title="Peak OT Test"></i>' : ''}
+                <i class="fa-solid fa-crown text-[9px] text-amber-400" title="Peak OT Test"></i>
               </span>
             </td>
             <td class="py-2.5 px-3.5 text-start font-medium">
@@ -1477,10 +1592,7 @@
             <td class="py-2.5 px-3.5 text-center font-semibold text-slate-400">${row.type}</td>
             <td class="py-2.5 px-3.5 text-start font-mono text-slate-300">${row.whp.toLocaleString()}</td>
             <td class="py-2.5 px-3.5 text-start font-mono text-slate-400">${row.nocProd.toLocaleString()}</td>
-            <td class="py-2.5 px-3.5 text-start font-mono font-bold text-emerald-400 flex items-center gap-1.5">
-              ${row.otProdRate.toLocaleString()}
-              ${isPeak ? '<span class="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-normal">MAX</span>' : ''}
-            </td>
+            <td class="py-2.5 px-3.5 text-start font-mono font-bold text-emerald-400">${row.otProdRate.toLocaleString()}</td>
             <td class="py-2.5 px-3.5 text-start font-mono ${devClass}">${devSign}${row.deviation.toLocaleString()}</td>
             <td class="py-2.5 px-3.5 text-start font-mono text-slate-300">${row.prodWHP.toLocaleString()}</td>
             <td class="py-2.5 px-3.5 text-start font-mono font-bold text-amber-400">${row.gasRate.toFixed(3)}</td>
@@ -1494,44 +1606,17 @@
     }
 
     // -------------------------------------------------------------
-    // 9. Update KPI Cards (Using Highest Tested OT Prod in Max Mode)
+    // 8. Update KPI Cards (Strictly Peak Values)
     // -------------------------------------------------------------
     function updateKPIs(data) {
       const uniqueWells = new Set(data.map(d => d.well));
       document.getElementById('kpiWellsCount').textContent = uniqueWells.size;
 
-      let totalOil = 0;
-      let totalGas = 0;
-      let totalWater = 0;
-      let avgWHP = 0;
-      let avgAPI = 0;
-
-      if (aggregationMode === 'max') {
-        // Sum of peak production tests per well!
-        const peakRecs = getPeakRecordsPerWell(data);
-        totalOil = peakRecs.reduce((acc, c) => acc + c.otProdRate, 0);
-        totalGas = peakRecs.reduce((acc, c) => acc + c.gasRate, 0);
-        totalWater = peakRecs.reduce((acc, c) => acc + c.water, 0);
-        avgWHP = peakRecs.length ? (peakRecs.reduce((acc, c) => acc + c.whp, 0) / peakRecs.length) : 0;
-        avgAPI = peakRecs.length ? (peakRecs.reduce((acc, c) => acc + c.api, 0) / peakRecs.length) : 0;
-
-        document.getElementById('kpiOilTitle').textContent = t('kpiOilTitlePeak');
-        document.getElementById('kpiOilSubtitle').textContent = (currentLang === 'ar' ? 'مجموع أعلى إنتاجية فحص للآبار' : 'Sum of Highest OT Tests');
-        document.getElementById('kpiGasTitle').textContent = t('kpiGasTitlePeak');
-        document.getElementById('kpiGasSubtitle').textContent = (currentLang === 'ar' ? 'عند أعلى تدفق نفطي' : 'At Peak Oil Flows');
-      } else {
-        // Average / raw sum of filtered tests
-        totalOil = data.reduce((acc, cur) => acc + cur.otProdRate, 0);
-        totalGas = data.reduce((acc, cur) => acc + cur.gasRate, 0);
-        totalWater = data.reduce((acc, cur) => acc + cur.water, 0);
-        avgWHP = data.length ? (data.reduce((acc, cur) => acc + cur.whp, 0) / data.length) : 0;
-        avgAPI = data.length ? (data.reduce((acc, cur) => acc + cur.api, 0) / data.length) : 0;
-
-        document.getElementById('kpiOilTitle').textContent = t('kpiOilTitleAll');
-        document.getElementById('kpiOilSubtitle').textContent = (currentLang === 'ar' ? 'مجموع الفحوصات المحددة' : 'Sum of Filtered Tests');
-        document.getElementById('kpiGasTitle').textContent = t('kpiGasTitleAll');
-        document.getElementById('kpiGasSubtitle').textContent = (currentLang === 'ar' ? 'مجموع تدفق الغاز' : 'Sum of Gas Rates');
-      }
+      const totalOil = data.reduce((acc, c) => acc + c.otProdRate, 0);
+      const totalGas = data.reduce((acc, c) => acc + c.gasRate, 0);
+      const totalWater = data.reduce((acc, c) => acc + c.water, 0);
+      const avgWHP = data.length ? (data.reduce((acc, c) => acc + c.whp, 0) / data.length) : 0;
+      const avgAPI = data.length ? (data.reduce((acc, c) => acc + c.api, 0) / data.length) : 0;
 
       document.getElementById('kpiTotalOil').innerHTML = `${Math.round(totalOil).toLocaleString()} <span class="text-xs text-slate-400 font-normal">STB/D</span>`;
       document.getElementById('kpiTotalGas').innerHTML = `${totalGas.toFixed(2)} <span class="text-xs text-slate-400 font-normal">MMSCFD</span>`;
@@ -1541,7 +1626,7 @@
     }
 
     // -------------------------------------------------------------
-    // 10. Interactive Visualizations (Charts using Highest Tested OT Prod)
+    // 9. Interactive Visualizations (Charts)
     // -------------------------------------------------------------
     function initCharts(data) {
       Chart.defaults.color = '#94a3b8';
@@ -1612,156 +1697,82 @@
     function updateCharts(data) {
       if (!charts.chart1) return;
 
-      const isWellSelected = (selectedWell !== 'ALL');
+      const labels = data.map(r => `Well ${r.well} (${r.choke})`);
+      const oilData = data.map(r => r.otProdRate);
+      const gasData = data.map(r => Number(r.gasRate.toFixed(2)));
+      const devData = data.map(r => r.deviation);
 
-      if (!isWellSelected && aggregationMode === 'max') {
-        // Compare all 7 wells using their HIGHEST TESTED OT Prod Rate
-        const peakRecs = getPeakRecordsPerWell(data);
-        const labels = peakRecs.map(r => `Well ${r.well} (${r.choke})`);
-        const oilData = peakRecs.map(r => r.otProdRate);
-        const gasData = peakRecs.map(r => Number(r.gasRate.toFixed(2)));
-        const devData = peakRecs.map(r => r.deviation);
-
-        // Chart 1: Well Comparison Bar
-        charts.chart1.data.labels = labels;
-        charts.chart1.data.datasets = [
-          {
-            label: currentLang === 'ar' ? 'أعلى إنتاجية فحص (STB/D)' : 'Peak Tested OT Prod (STB/D)',
-            data: oilData,
-            backgroundColor: 'rgba(16, 185, 129, 0.85)',
-            borderColor: '#10b981',
-            borderWidth: 1.5,
-            borderRadius: 6,
-            yAxisID: 'y'
-          },
-          {
-            label: currentLang === 'ar' ? 'معدل الغاز (MMSCFD)' : 'Gas Flow (MMSCFD)',
-            data: gasData,
-            backgroundColor: 'rgba(245, 158, 11, 0.9)',
-            borderColor: '#f59e0b',
-            borderWidth: 1.5,
-            borderRadius: 6,
-            yAxisID: 'y1'
-          }
-        ];
-        charts.chart1.update();
-
-        // Chart 2: Donut of Peak Share
-        charts.chart2.data.labels = peakRecs.map(r => `Well ${r.well}`);
-        charts.chart2.data.datasets = [{
+      // Chart 1: Bar
+      charts.chart1.data.labels = labels;
+      charts.chart1.data.datasets = [
+        {
+          label: currentLang === 'ar' ? 'أعلى إنتاجية فحص (STB/D)' : 'Peak Tested OT Prod (STB/D)',
           data: oilData,
-          backgroundColor: ['#10b981', '#0284c7', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'],
-          borderWidth: 2,
-          borderColor: '#0f172a'
-        }];
-        charts.chart2.update();
-
-        // Chart 3: Deviation
-        charts.chart3.data.labels = labels;
-        charts.chart3.data.datasets = [{
-          label: currentLang === 'ar' ? 'الانحراف عن المستهدف (Deviation)' : 'Peak Target Deviation (bbl/d)',
-          data: devData,
-          backgroundColor: devData.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(244, 63, 94, 0.8)'),
-          borderColor: devData.map(v => v >= 0 ? '#10b981' : '#f43f5e'),
+          backgroundColor: 'rgba(16, 185, 129, 0.85)',
+          borderColor: '#10b981',
           borderWidth: 1.5,
-          borderRadius: 4
-        }];
-        charts.chart3.update();
-
-        // Chart 4: WHP of Peak Tests
-        charts.chart4.data.labels = labels;
-        charts.chart4.data.datasets = [
-          {
-            label: 'WHP (Psig)',
-            data: peakRecs.map(r => r.whp),
-            borderColor: '#0284c7',
-            backgroundColor: 'rgba(2, 132, 199, 0.1)',
-            tension: 0.35,
-            fill: true
-          },
-          {
-            label: 'Prod WH.P',
-            data: peakRecs.map(r => r.prodWHP),
-            borderColor: '#a855f7',
-            borderDash: [5, 5],
-            backgroundColor: 'transparent',
-            tension: 0.35
-          }
-        ];
-        charts.chart4.update();
-
-      } else {
-        // Filtered tests or all test points across chokes
-        const labels = data.map(d => `W${d.well} (${d.choke}) [${d.date}]`);
-        
-        charts.chart1.data.labels = labels;
-        charts.chart1.data.datasets = [
-          {
-            label: currentLang === 'ar' ? 'إنتاج النفط (STB/D)' : 'Oil Prod (STB/D)',
-            data: data.map(d => d.otProdRate),
-            backgroundColor: 'rgba(16, 185, 129, 0.8)',
-            borderColor: '#10b981',
-            borderWidth: 1.5,
-            borderRadius: 6,
-            yAxisID: 'y'
-          },
-          {
-            label: currentLang === 'ar' ? 'معدل الغاز (MMSCFD)' : 'Gas Rate (MMSCFD)',
-            data: data.map(d => d.gasRate),
-            backgroundColor: 'rgba(245, 158, 11, 0.85)',
-            borderColor: '#f59e0b',
-            borderWidth: 1.5,
-            borderRadius: 6,
-            yAxisID: 'y1'
-          }
-        ];
-        charts.chart1.update();
-
-        charts.chart2.data.labels = data.map(d => `Choke ${d.choke}`);
-        charts.chart2.data.datasets = [{
-          data: data.map(d => d.otProdRate),
-          backgroundColor: ['#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'],
-          borderWidth: 2,
-          borderColor: '#0f172a'
-        }];
-        charts.chart2.update();
-
-        charts.chart3.data.labels = labels;
-        charts.chart3.data.datasets = [{
-          label: currentLang === 'ar' ? 'الانحراف (Deviation)' : 'Deviation (bbl/d)',
-          data: data.map(d => d.deviation),
-          backgroundColor: data.map(d => d.deviation >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(244, 63, 94, 0.8)'),
-          borderColor: data.map(d => d.deviation >= 0 ? '#10b981' : '#f43f5e'),
+          borderRadius: 6,
+          yAxisID: 'y'
+        },
+        {
+          label: currentLang === 'ar' ? 'معدل تدفق الغاز (MMSCFD)' : 'Gas Flow (MMSCFD)',
+          data: gasData,
+          backgroundColor: 'rgba(245, 158, 11, 0.9)',
+          borderColor: '#f59e0b',
           borderWidth: 1.5,
-          borderRadius: 4
-        }];
-        charts.chart3.update();
+          borderRadius: 6,
+          yAxisID: 'y1'
+        }
+      ];
+      charts.chart1.update();
 
-        charts.chart4.data.labels = labels;
-        charts.chart4.data.datasets = [
-          {
-            label: 'WHP (Psig)',
-            data: data.map(d => d.whp),
-            borderColor: '#0284c7',
-            backgroundColor: 'rgba(2, 132, 199, 0.1)',
-            tension: 0.35,
-            fill: true
-          },
-          {
-            label: 'Prod WH.P',
-            data: data.map(d => d.prodWHP),
-            borderColor: '#a855f7',
-            borderDash: [5, 5],
-            backgroundColor: 'transparent',
-            tension: 0.35
-          }
-        ];
-        charts.chart4.update();
-      }
+      // Chart 2: Donut
+      charts.chart2.data.labels = data.map(r => `Well ${r.well}`);
+      charts.chart2.data.datasets = [{
+        data: oilData,
+        backgroundColor: ['#10b981', '#0284c7', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'],
+        borderWidth: 2,
+        borderColor: '#0f172a'
+      }];
+      charts.chart2.update();
+
+      // Chart 3: Deviation
+      charts.chart3.data.labels = labels;
+      charts.chart3.data.datasets = [{
+        label: currentLang === 'ar' ? 'الانحراف عن المستهدف (Deviation)' : 'Peak Target Deviation (bbl/d)',
+        data: devData,
+        backgroundColor: devData.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(244, 63, 94, 0.8)'),
+        borderColor: devData.map(v => v >= 0 ? '#10b981' : '#f43f5e'),
+        borderWidth: 1.5,
+        borderRadius: 4
+      }];
+      charts.chart3.update();
+
+      // Chart 4: WHP Pressure
+      charts.chart4.data.labels = labels;
+      charts.chart4.data.datasets = [
+        {
+          label: 'WHP (Psig)',
+          data: data.map(r => r.whp),
+          borderColor: '#0284c7',
+          backgroundColor: 'rgba(2, 132, 199, 0.1)',
+          tension: 0.35,
+          fill: true
+        },
+        {
+          label: 'Prod WH.P (Psig)',
+          data: data.map(r => r.prodWHP),
+          borderColor: '#a855f7',
+          borderDash: [5, 5],
+          backgroundColor: 'transparent',
+          tension: 0.35
+        }
+      ];
+      charts.chart4.update();
     }
 
     // -------------------------------------------------------------
-    // 11. Excel / CSV File Upload Handler
+    // 10. Excel / CSV File Upload Handler
     // -------------------------------------------------------------
     document.getElementById('excelFileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -1803,7 +1814,8 @@
           if (otProdIdx === -1) otProdIdx = 7;
           if (gasIdx === -1) gasIdx = 10;
 
-          const parsedRows = [];
+          // Parse and extract the highest test point per well
+          const wellMap = {};
           for (let i = 1; i < jsonData.length; i++) {
             const r = jsonData[i];
             if (!r || r.length < 3) continue;
@@ -1819,7 +1831,7 @@
             const apiVal = parseFloat(r[apiIdx]) || 35.0;
             const bswVal = parseFloat(r[bswIdx]) || 0.1;
 
-            parsedRows.push({
+            const record = {
               well: wellVal,
               field: "Khabbaz",
               fieldAr: "حقل خباز",
@@ -1837,18 +1849,22 @@
               spGr: 0.85,
               api: apiVal,
               bsw: bswVal
-            });
+            };
+
+            if (!wellMap[wellVal] || record.otProdRate > wellMap[wellVal].otProdRate) {
+              wellMap[wellVal] = record;
+            }
           }
 
-          if (parsedRows.length > 0) {
-            currentDataset = parsedRows;
-            document.getElementById('recordCountBadge').textContent = `${parsedRows.length} ${t('tableRecords')}`;
-            renderWellsBreakdownCards();
+          const parsedPeakRows = Object.values(wellMap);
+          if (parsedPeakRows.length > 0) {
+            activeDataset = parsedPeakRows;
+            renderWellsPeakCards();
             populateFilterOptions();
             applyFilters();
             alert(currentLang === 'ar' 
-              ? `تم استيراد ${parsedRows.length} سجلاً بنجاح من ملف ${file.name}!` 
-              : `Successfully imported ${parsedRows.length} records from ${file.name}!`);
+              ? `تم استيراد أعلى إنتاجية فحص لـ ${parsedPeakRows.length} آبار بنجاح من ملف ${file.name}!` 
+              : `Successfully extracted peak production for ${parsedPeakRows.length} wells from ${file.name}!`);
           } else {
             alert(currentLang === 'ar' ? 'لم يتم العثور على أسطر صالحة.' : 'No valid data rows found in file.');
           }
@@ -1861,7 +1877,7 @@
     });
 
     // -------------------------------------------------------------
-    // 12. CSV Export Functionality
+    // 11. CSV Export Functionality
     // -------------------------------------------------------------
     document.getElementById('exportCsvBtn').addEventListener('click', () => {
       const dataToExport = getFilteredData();
@@ -1881,14 +1897,14 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Khabbaz_Wells_Data_Export_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute("download", `Khabbaz_Peak_Wells_Export_${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     });
 
     // -------------------------------------------------------------
-    // 13. Power BI Modal Logic
+    // 12. Power BI Modal Logic
     // -------------------------------------------------------------
     const pbiModal = document.getElementById('powerBiModal');
     document.getElementById('openPowerBiBtn').addEventListener('click', () => pbiModal.classList.remove('hidden'));
@@ -1913,8 +1929,8 @@
 
     document.getElementById('downloadPbiCsvBtn').addEventListener('click', () => {
       const link = document.createElement("a");
-      link.setAttribute("href", "Khabbaz_Cleaned_Data.csv");
-      link.setAttribute("download", "Khabbaz_Cleaned_Data.csv");
+      link.setAttribute("href", "Khabbaz_Peak_Wells_Data.csv");
+      link.setAttribute("download", "Khabbaz_Peak_Wells_Data.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1937,12 +1953,12 @@
     }
 
     // -------------------------------------------------------------
-    // 14. Event Listeners & Initialization
+    // 13. Event Listeners & Initialization
     // -------------------------------------------------------------
     document.getElementById('langToggleBtn').addEventListener('click', toggleLanguage);
     document.getElementById('wellFilterSelect').addEventListener('change', function() {
       selectedWell = this.value;
-      renderWellsBreakdownCards();
+      renderWellsPeakCards();
       applyFilters();
     });
     document.getElementById('chokeFilterSelect').addEventListener('change', applyFilters);
@@ -1952,13 +1968,13 @@
       document.getElementById('wellFilterSelect').value = 'ALL';
       document.getElementById('chokeFilterSelect').value = 'ALL';
       document.getElementById('searchInput').value = '';
-      renderWellsBreakdownCards();
+      renderWellsPeakCards();
       applyFilters();
     });
 
     window.addEventListener('DOMContentLoaded', () => {
       setLanguage(currentLang);
-      initCharts(currentDataset);
+      initCharts(activeDataset);
     });
   </script>
 </body>
