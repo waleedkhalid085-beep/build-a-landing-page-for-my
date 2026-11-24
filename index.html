@@ -1,20 +1,22 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة مراقبة وتحليل آبار النفط والغاز - حقل خباز (Khabbaz Field)</title>
+  <title>Oil & Gas Fields Operations Dashboard - North Oil Operations (NOC)</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- SheetJS (xlsx) for direct excel parsing in browser -->
+  <!-- SheetJS for browser-side Excel parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Font: Cairo -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Inter (English) & Cairo (Arabic) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -22,22 +24,27 @@
       theme: {
         extend: {
           fontFamily: {
-            cairo: ['Cairo', 'sans-serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            cairo: ['Cairo', 'Inter', 'sans-serif'],
           },
           colors: {
             brand: {
               50: '#f0f9ff',
+              100: '#e0f2fe',
               500: '#0284c7',
               600: '#0369a1',
               700: '#075985',
               800: '#0c4a6e',
               900: '#082f49',
+              950: '#041c2c',
             },
             petro: {
               gold: '#f59e0b',
-              dark: '#0f172a',
-              card: '#1e293b',
-              border: '#334155',
+              amber: '#d97706',
+              dark: '#0b1120',
+              card: '#131e32',
+              surface: '#18243c',
+              border: '#223250',
             }
           }
         }
@@ -47,366 +54,1920 @@
 
   <style>
     body {
-      font-family: 'Cairo', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    [dir="rtl"] body {
+      font-family: 'Cairo', 'Inter', sans-serif;
     }
     .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #475569;
+      background: #334155;
       border-radius: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: #1e293b;
+      background: #0f172a;
+    }
+    .glow-effect {
+      box-shadow: 0 0 25px -5px rgba(2, 132, 199, 0.25);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col custom-scrollbar">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col custom-scrollbar antialiased">
 
-  <!-- Header -->
-  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-lg">
+  <!-- Main Navigation Header -->
+  <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 sticky top-0 z-50 shadow-xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
-      <div class="flex items-center space-x-3 space-x-reverse">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-sky-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3 rtl:space-x-reverse">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-sky-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-sky-600/25 ring-2 ring-white/10 shrink-0">
           <i class="fa-solid fa-oil-well text-slate-950 text-2xl"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-black text-white tracking-wide">داشبورد إنتاج حقل خباز</h1>
-            <span class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">Khabbaz Field Wells</span>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h1 class="text-lg sm:text-xl font-black text-white tracking-wide" data-i18n="appTitle">Oil & Gas Fields Operations Dashboard</h1>
+            <span class="text-[11px] bg-gradient-to-r from-sky-500/20 to-blue-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider" data-i18n="appBadge">Multi-Field Surveillance</span>
           </div>
-          <p class="text-xs text-slate-400">مراقبة الآبار، معدلات التدفق (Natural Flow & Gas Lift)، ومؤشرات الإنتاج</p>
+          <p class="text-xs text-slate-400" data-i18n="appSubtitle">Consolidated surveillance of all fields and individual well flow testing analytics (NOC Operations)</p>
         </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-3">
+      <!-- Action Buttons & Controls -->
+      <div class="flex items-center flex-wrap gap-2.5">
+        
+        <!-- Language Switcher Button (English Default, Arabic Switch) -->
+        <button id="langToggleBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-400 text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-globe text-base text-sky-400"></i>
+          <span id="langToggleLabel">العربية</span>
+        </button>
+
+        <!-- Power BI Hub Modal Trigger -->
+        <button id="openPowerBiBtn" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-md shadow-amber-600/20 transition transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-chart-pie text-slate-950"></i>
+          <span data-i18n="powerBiHubBtn">Power BI Hub</span>
+        </button>
+
         <!-- Upload Excel Button -->
-        <label for="excelFileInput" class="cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-sm font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-900/30 transition-all transform hover:-translate-y-0.5">
+        <label for="excelFileInput" class="cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-md shadow-emerald-900/30 transition transform hover:-translate-y-0.5">
           <i class="fa-solid fa-file-excel text-base"></i>
-          <span>رفع ملف إكسل جديد (.xlsx)</span>
+          <span data-i18n="uploadExcelBtn">Upload Excel (.xlsx)</span>
           <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden">
         </label>
 
-        <!-- Export CSV / Print -->
-        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-print"></i>
-          <span class="hidden sm:inline">طباعة التقرير</span>
+        <!-- Export CSV Button -->
+        <button id="exportCsvBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-download text-xs text-slate-400"></i>
+          <span class="hidden md:inline" data-i18n="exportCsvBtn">Export CSV</span>
         </button>
+
+        <!-- Print Button -->
+        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-print"></i>
+          <span class="hidden sm:inline" data-i18n="printBtn">Print</span>
+        </button>
+
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Sub-Header: Field Navigation Tabs -->
+  <nav class="bg-slate-900/60 border-b border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 overflow-x-auto custom-scrollbar">
+      
+      <!-- Field Switcher Pills -->
+      <div class="flex items-center gap-2 min-w-max" id="fieldTabsContainer">
+        <!-- Generated by JavaScript: All Fields, Khabbaz, Kirkuk, Bai Hassan, Jambur -->
+      </div>
+
+      <!-- Scope Indicator Badge -->
+      <div class="hidden lg:flex items-center gap-2 shrink-0 text-xs">
+        <span class="text-slate-400" data-i18n="currentViewLabel">Current View:</span>
+        <span class="px-2.5 py-1 rounded-lg bg-sky-950/80 text-sky-300 border border-sky-800/60 font-bold" id="activeFieldBadge">All Oil Fields (Consolidated)</span>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
 
-    <!-- Notice / Excel Source -->
-    <div id="fileNotice" class="bg-gradient-to-r from-sky-950/60 to-slate-900 border border-sky-800/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <div>
-          <span class="text-sm font-bold text-sky-200" id="currentFileName">البيانات الحالية: تم تحميل بيانات ملف `Khabaz_updated.xlsx` بنجاح</span>
-          <p class="text-xs text-slate-400">تم استخراج وتحليل بيانات الآبار (Well 33, 11, 35, 015, 25, 22, 43) واختبارات الجريان الطبيعي</p>
-        </div>
-      </div>
-      <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700 shrink-0" id="recordCountBadge">30 سجل اختبار بئر</span>
+    <!-- Active Field Profile / Multi-field Overview Banner -->
+    <div id="fieldProfileCard" class="bg-gradient-to-r from-slate-900 via-sky-950/40 to-slate-900 border border-sky-900/30 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+      <!-- Injected dynamically based on whether "ALL" or specific field is selected -->
     </div>
 
-    <!-- Filters Section -->
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+    <!-- Multi-Field Comparison Cards (Visible in "ALL" fields mode) -->
+    <section id="multiFieldGridSection" class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-cubes-stacked text-sky-400"></i>
+          <span data-i18n="fieldsSummaryTitle">Oil Fields Performance Summary</span>
+        </h2>
+        <span class="text-xs text-slate-500" data-i18n="fieldsSummarySubtitle">Click any field to drill down into its individual wells</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="fieldsSummaryCards">
+        <!-- Dynamically populated field cards: Khabbaz, Kirkuk, Bai Hassan, Jambur -->
+      </div>
+    </section>
+
+    <!-- Filters & Slicers Bar -->
+    <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur">
       <div class="flex flex-wrap items-center justify-between gap-4">
+        
         <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
-          <!-- Well Selector -->
+          
+          <!-- Field Slicer -->
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400 font-semibold shrink-0"><i class="fa-solid fa-filter text-sky-400 ml-1"></i>رقم البئر (Well):</span>
-            <select id="wellFilter" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:border-sky-500 cursor-pointer">
-              <option value="ALL">جميع الآبار (الكل)</option>
-              <option value="33">Well 33</option>
-              <option value="11">Well 11</option>
-              <option value="35">Well 35</option>
-              <option value="015">Well 015</option>
-              <option value="25">Well 25</option>
-              <option value="22">Well 22</option>
-              <option value="43">Well 43</option>
+            <span class="text-xs text-slate-400 font-semibold shrink-0">
+              <i class="fa-solid fa-map-location-dot text-sky-400"></i>
+              <span data-i18n="filterFieldLabel">Field:</span>
+            </span>
+            <select id="fieldFilterSelect" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:border-sky-500 cursor-pointer">
+              <!-- Dynamically populated -->
             </select>
           </div>
 
-          <!-- Choke Size Filter -->
+          <!-- Well Slicer -->
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400 font-semibold shrink-0">حجم الخانق (Choke):</span>
-            <select id="chokeFilter" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:border-sky-500 cursor-pointer">
-              <option value="ALL">جميع الأحجام</option>
+            <span class="text-xs text-slate-400 font-semibold shrink-0">
+              <i class="fa-solid fa-bore-hole text-emerald-400"></i>
+              <span data-i18n="filterWellLabel">Well No:</span>
+            </span>
+            <select id="wellFilterSelect" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:border-sky-500 cursor-pointer">
+              <option value="ALL">All Wells</option>
+            </select>
+          </div>
+
+          <!-- Choke Size Slicer -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-semibold shrink-0">
+              <i class="fa-solid fa-sliders text-amber-400"></i>
+              <span data-i18n="filterChokeLabel">Choke Size:</span>
+            </span>
+            <select id="chokeFilterSelect" class="bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-1.5 focus:outline-none focus:border-sky-500 cursor-pointer">
+              <option value="ALL">All Chokes</option>
             </select>
           </div>
 
           <!-- Search Input -->
           <div class="relative flex-1 min-w-[180px]">
-            <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-slate-500 text-xs"></i>
-            <input type="text" id="searchInput" placeholder="بحث بتاريخ، بئر، أو رقم..." class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl pr-8 pl-3 py-1.5 focus:outline-none focus:border-sky-500 placeholder-slate-500">
+            <i class="fa-solid fa-magnifying-glass absolute inset-y-0 ltr:right-3 rtl:left-3 flex items-center text-slate-500 text-xs pointer-events-none"></i>
+            <input type="text" id="searchInput" placeholder="Search by Well, Field, Date, Choke..." class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-xl ltr:pl-3 ltr:pr-8 rtl:pr-3 rtl:pl-8 py-1.5 focus:outline-none focus:border-sky-500 placeholder-slate-500">
           </div>
+
         </div>
 
-        <button id="resetFilters" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 transition">
-          <i class="fa-solid fa-arrow-rotate-right ml-1"></i>إعادة ضبط الفلاتر
+        <!-- Reset Button -->
+        <button id="resetFiltersBtn" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
+          <i class="fa-solid fa-arrow-rotate-right"></i>
+          <span data-i18n="resetFiltersBtn">Reset Slicers</span>
         </button>
+
       </div>
     </section>
 
-    <!-- Top KPI Cards -->
+    <!-- Top Key Performance Indicators (6 KPI Cards) -->
     <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-      <!-- KPI 1: Total Wells -->
+      
+      <!-- KPI 1: Active Wells -->
       <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow relative overflow-hidden group hover:border-sky-500/50 transition">
-        <div class="text-xs text-slate-400 font-medium">عدد الآبار المراقبة</div>
-        <div class="text-2xl font-black text-sky-400 mt-1" id="kpiWellsCount">7</div>
-        <div class="text-[11px] text-slate-500 mt-1">حقل خباز النفطي</div>
-        <i class="fa-solid fa-bore-hole absolute left-3 bottom-3 text-2xl text-slate-800 group-hover:text-sky-500/10 transition"></i>
+        <div class="text-xs text-slate-400 font-medium" data-i18n="kpiWellsTitle">Monitored Wells</div>
+        <div class="text-2xl font-black text-sky-400 mt-1" id="kpiWellsCount">0</div>
+        <div class="text-[11px] text-slate-500 mt-1" id="kpiWellsSubtitle">Active Well Tests</div>
+        <i class="fa-solid fa-bore-hole absolute ltr:right-3 rtl:left-3 bottom-3 text-2xl text-slate-800/60 group-hover:text-sky-500/10 transition"></i>
       </div>
 
       <!-- KPI 2: Total Oil Production -->
       <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow relative overflow-hidden group hover:border-emerald-500/50 transition">
-        <div class="text-xs text-slate-400 font-medium">مجموع إنتاج النفط الميداني</div>
+        <div class="text-xs text-slate-400 font-medium" data-i18n="kpiOilTitle">Total Oil Production</div>
         <div class="text-2xl font-black text-emerald-400 mt-1" id="kpiTotalOil">0 <span class="text-xs text-slate-400 font-normal">STB/D</span></div>
-        <div class="text-[11px] text-slate-500 mt-1">OT Prod. Rate</div>
-        <i class="fa-solid fa-barrel-oil absolute left-3 bottom-3 text-2xl text-slate-800 group-hover:text-emerald-500/10 transition"></i>
+        <div class="text-[11px] text-slate-500 mt-1">OT Prod Rate</div>
+        <i class="fa-solid fa-barrel-oil absolute ltr:right-3 rtl:left-3 bottom-3 text-2xl text-slate-800/60 group-hover:text-emerald-500/10 transition"></i>
       </div>
 
       <!-- KPI 3: Total Gas Rate -->
       <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow relative overflow-hidden group hover:border-amber-500/50 transition">
-        <div class="text-xs text-slate-400 font-medium">معدل الغاز الكلي</div>
+        <div class="text-xs text-slate-400 font-medium" data-i18n="kpiGasTitle">Total Gas Flow</div>
         <div class="text-2xl font-black text-amber-400 mt-1" id="kpiTotalGas">0 <span class="text-xs text-slate-400 font-normal">MMSCFD</span></div>
         <div class="text-[11px] text-slate-500 mt-1">Gas Flow Rate</div>
-        <i class="fa-solid fa-fire-flame-simple absolute left-3 bottom-3 text-2xl text-slate-800 group-hover:text-amber-500/10 transition"></i>
+        <i class="fa-solid fa-fire-flame-simple absolute ltr:right-3 rtl:left-3 bottom-3 text-2xl text-slate-800/60 group-hover:text-amber-500/10 transition"></i>
       </div>
 
       <!-- KPI 4: Avg WHP -->
       <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow relative overflow-hidden group hover:border-indigo-500/50 transition">
-        <div class="text-xs text-slate-400 font-medium">متوسط ضغط رأس البئر</div>
+        <div class="text-xs text-slate-400 font-medium" data-i18n="kpiWhpTitle">Avg Wellhead Pressure</div>
         <div class="text-2xl font-black text-indigo-400 mt-1" id="kpiAvgWHP">0 <span class="text-xs text-slate-400 font-normal">Psig</span></div>
-        <div class="text-[11px] text-slate-500 mt-1">Wellhead Pressure (WHP)</div>
-        <i class="fa-solid fa-gauge-high absolute left-3 bottom-3 text-2xl text-slate-800 group-hover:text-indigo-500/10 transition"></i>
+        <div class="text-[11px] text-slate-500 mt-1">WHP Psig</div>
+        <i class="fa-solid fa-gauge-high absolute ltr:right-3 rtl:left-3 bottom-3 text-2xl text-slate-800/60 group-hover:text-indigo-500/10 transition"></i>
       </div>
 
       <!-- KPI 5: Avg API -->
       <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow relative overflow-hidden group hover:border-purple-500/50 transition">
-        <div class="text-xs text-slate-400 font-medium">كثافة النفط (درجة API)</div>
+        <div class="text-xs text-slate-400 font-medium" data-i18n="kpiApiTitle">Crude Oil Gravity</div>
         <div class="text-2xl font-black text-purple-400 mt-1" id="kpiAvgAPI">0° <span class="text-xs text-slate-400 font-normal">API</span></div>
-        <div class="text-[11px] text-slate-500 mt-1">نفط خفيف / متوسط</div>
-        <i class="fa-solid fa-flask absolute left-3 bottom-3 text-2xl text-slate-800 group-hover:text-purple-500/10 transition"></i>
+        <div class="text-[11px] text-slate-500 mt-1">Light / Medium Crude</div>
+        <i class="fa-solid fa-flask absolute ltr:right-3 rtl:left-3 bottom-3 text-2xl text-slate-800/60 group-hover:text-purple-500/10 transition"></i>
       </div>
 
       <!-- KPI 6: Water Production -->
       <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow relative overflow-hidden group hover:border-cyan-500/50 transition">
-        <div class="text-xs text-slate-400 font-medium">إنتاج الماء المصاحب</div>
+        <div class="text-xs text-slate-400 font-medium" data-i18n="kpiWaterTitle">Produced Water</div>
         <div class="text-2xl font-black text-cyan-400 mt-1" id="kpiTotalWater">0 <span class="text-xs text-slate-400 font-normal">STB/D</span></div>
-        <div class="text-[11px] text-slate-500 mt-1">Water Rate (STB/D)</div>
-        <i class="fa-solid fa-droplet absolute left-3 bottom-3 text-2xl text-slate-800 group-hover:text-cyan-500/10 transition"></i>
+        <div class="text-[11px] text-slate-500 mt-1">Water Rate</div>
+        <i class="fa-solid fa-droplet absolute ltr:right-3 rtl:left-3 bottom-3 text-2xl text-slate-800/60 group-hover:text-cyan-500/10 transition"></i>
       </div>
+
     </section>
 
-    <!-- Charts Grid -->
+    <!-- Interactive Charts Grid (2x2) -->
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <!-- Chart 1: Oil & Gas Comparison by Well -->
+      <!-- Chart 1: Production Comparison -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <h3 class="font-bold text-white text-base flex items-center gap-2" id="chart1Title">
               <i class="fa-solid fa-chart-column text-sky-400"></i>
-              مقارنة إنتاج النفط (OT Prod Rate) ومعدل الغاز لكل بئر
+              <span>Oil Production & Gas Rate</span>
             </h3>
-            <p class="text-xs text-slate-400">معدل البراميل يومياً (STB/D) مقابل تدفق الغاز (MMSCFD)</p>
+            <p class="text-xs text-slate-400" id="chart1Subtitle">Barrels per day (STB/D) vs Gas flow (MMSCFD)</p>
           </div>
         </div>
         <div class="relative h-72">
-          <canvas id="oilGasChart"></canvas>
+          <canvas id="chart1Canvas"></canvas>
         </div>
       </div>
 
-      <!-- Chart 2: Pressure & Choke Performance -->
+      <!-- Chart 2: Production Share Distribution -->
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="font-bold text-white text-base flex items-center gap-2">
-              <i class="fa-solid fa-chart-line text-emerald-400"></i>
-              سلوك الضغط (WHP Psig vs Prod WH.P) مع حجم الخانق
-            </h3>
-            <p class="text-xs text-slate-400">تغير الضغط عبر خانقات التدفق لمختلف الآبار</p>
-          </div>
-        </div>
-        <div class="relative h-72">
-          <canvas id="pressureChart"></canvas>
-        </div>
-      </div>
-
-      <!-- Chart 3: Oil Production vs Target (NOC Rate vs OT Prod Rate) -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="font-bold text-white text-base flex items-center gap-2">
-              <i class="fa-solid fa-sliders text-amber-400"></i>
-              مقارنة الإنتاج الفعلي (OT Prod) بالمستهدف (NOC Prod)
-            </h3>
-            <p class="text-xs text-slate-400">نسبة الانحراف الفعلي (Deviation) عن المعدل المحدد</p>
-          </div>
-        </div>
-        <div class="relative h-72">
-          <canvas id="deviationChart"></canvas>
-        </div>
-      </div>
-
-      <!-- Chart 4: Well Quality (API Gravity & BS&W%) -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <h3 class="font-bold text-white text-base flex items-center gap-2" id="chart2Title">
               <i class="fa-solid fa-chart-pie text-purple-400"></i>
-              مخطط توزيع نسب الإنتاج بين الآبار
+              <span>Production Share Contribution (%)</span>
             </h3>
-            <p class="text-xs text-slate-400">حصة كل بئر من إجمالي إنتاج حقل خباز الحالي</p>
+            <p class="text-xs text-slate-400" id="chart2Subtitle">Percentage contribution to overall oil output</p>
           </div>
         </div>
         <div class="relative h-72">
-          <canvas id="wellShareChart"></canvas>
+          <canvas id="chart2Canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 3: Actual vs Target Quota (Deviation) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-white text-base flex items-center gap-2" id="chart3Title">
+              <i class="fa-solid fa-sliders text-amber-400"></i>
+              <span>Actual Production vs NOC Quota Target</span>
+            </h3>
+            <p class="text-xs text-slate-400" id="chart3Subtitle">Deviation rate (Over-production in green, Under-production in red)</p>
+          </div>
+        </div>
+        <div class="relative h-72">
+          <canvas id="chart3Canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 4: Pressure / Reservoir Diagnostics -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-white text-base flex items-center gap-2" id="chart4Title">
+              <i class="fa-solid fa-chart-line text-emerald-400"></i>
+              <span>Wellhead Pressure Behavior (WHP Psig)</span>
+            </h3>
+            <p class="text-xs text-slate-400" id="chart4Subtitle">Surface pressure response across choke sizes</p>
+          </div>
+        </div>
+        <div class="relative h-72">
+          <canvas id="chart4Canvas"></canvas>
         </div>
       </div>
 
     </section>
 
-    <!-- Comprehensive Data Table -->
+    <!-- Comprehensive Data Table Section -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow overflow-hidden">
+      
+      <!-- Table Header & Summary Controls -->
       <div class="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-table-list text-sky-400 text-lg"></i>
-          <h3 class="font-bold text-white text-base">جدول قراءات واختبارات الآبار الكامل (Natural Flow Data)</h3>
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-table-list"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base" data-i18n="tableTitle">Complete Well Test & Surveillance Records</h3>
+            <p class="text-xs text-slate-400" data-i18n="tableSubtitle">Natural flow and choke performance test logs</p>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-400">عرض:</span>
-          <span class="text-xs font-bold text-sky-400" id="filteredRowsCount">0</span>
-          <span class="text-xs text-slate-400">من أصل 30 سجل</span>
+        
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-slate-400" data-i18n="tableShowing">Showing:</span>
+          <span class="font-black text-sky-400 text-sm px-2 py-0.5 rounded bg-sky-950 border border-sky-800" id="filteredRowsCount">0</span>
+          <span class="text-slate-400" data-i18n="tableRecords">records</span>
         </div>
       </div>
 
       <!-- Responsive Table Container -->
+      <!-- In English (LTR): columns flow naturally from Left to Right -->
+      <!-- In Arabic (RTL): columns flow naturally from Right to Left -->
       <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-right text-xs">
-          <thead class="bg-slate-800/80 text-slate-300 border-b border-slate-700/80 font-bold uppercase tracking-wider">
-            <tr>
-              <th class="py-3 px-3 text-center">رقم البئر (Well No.)</th>
-              <th class="py-3 px-3">التاريخ (WT Date)</th>
-              <th class="py-3 px-3 text-center">حجم الخانق (Choke Size)</th>
-              <th class="py-3 px-3 text-center">نوع الإنتاج</th>
-              <th class="py-3 px-3 text-left">WHP (Psig)</th>
-              <th class="py-3 px-3 text-left">NOC Prod (bbl/d)</th>
-              <th class="py-3 px-3 text-left font-black text-emerald-400">OT Prod Rate (STB/D)</th>
-              <th class="py-3 px-3 text-left">الانحراف (Deviation)</th>
-              <th class="py-3 px-3 text-left">Prod WH.P</th>
-              <th class="py-3 px-3 text-left font-black text-amber-400">Gas Rate (MMSCFD)</th>
-              <th class="py-3 px-3 text-left text-cyan-400">Water (STB/D)</th>
-              <th class="py-3 px-3 text-left">Sp.Gr</th>
-              <th class="py-3 px-3 text-left text-purple-400">API°</th>
-              <th class="py-3 px-3 text-left">BS&W %</th>
+        <table class="w-full text-xs text-start" id="wellsDataTable">
+          <thead class="bg-slate-800/80 text-slate-300 border-b border-slate-700/80 font-bold uppercase tracking-wider text-start">
+            <tr id="tableHeaderRow">
+              <th class="py-3 px-3.5 text-start" data-col="field">Field</th>
+              <th class="py-3 px-3.5 text-center" data-col="well">Well No.</th>
+              <th class="py-3 px-3.5 text-start" data-col="date">WT Date</th>
+              <th class="py-3 px-3.5 text-center" data-col="choke">Choke</th>
+              <th class="py-3 px-3.5 text-center" data-col="type">Type</th>
+              <th class="py-3 px-3.5 text-start" data-col="whp">WHP (Psig)</th>
+              <th class="py-3 px-3.5 text-start" data-col="noc">NOC (bbl/d)</th>
+              <th class="py-3 px-3.5 text-start text-emerald-400 font-black" data-col="otProd">OT Prod Rate</th>
+              <th class="py-3 px-3.5 text-start" data-col="dev">Deviation</th>
+              <th class="py-3 px-3.5 text-start" data-col="prodWhp">Prod WH.P</th>
+              <th class="py-3 px-3.5 text-start text-amber-400 font-black" data-col="gas">Gas (MMSCFD)</th>
+              <th class="py-3 px-3.5 text-start text-cyan-400" data-col="water">Water (STB/D)</th>
+              <th class="py-3 px-3.5 text-start" data-col="spGr">Sp.Gr</th>
+              <th class="py-3 px-3.5 text-start text-purple-400 font-bold" data-col="api">API°</th>
+              <th class="py-3 px-3.5 text-start" data-col="bsw">BS&W %</th>
             </tr>
           </thead>
-          <tbody id="dataTableBody" class="divide-y divide-slate-800 text-slate-300">
-            <!-- Dynamically populated -->
+          <tbody id="dataTableBody" class="divide-y divide-slate-800/80 text-slate-300">
+            <!-- Rendered by JavaScript -->
           </tbody>
         </table>
       </div>
+
     </section>
 
   </main>
 
+  <!-- Power BI Hub Modal -->
+  <div id="powerBiModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-3xl w-full p-6 shadow-2xl relative space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      
+      <!-- Close Button -->
+      <button id="closePowerBiModal" class="absolute top-5 ltr:right-5 rtl:left-5 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl font-bold">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <div>
+          <h2 class="text-lg font-black text-white" data-i18n="pbiModalTitle">Power BI Integration Hub</h2>
+          <p class="text-xs text-slate-400" data-i18n="pbiModalSubtitle">Connect your oil field data directly to Microsoft Power BI Desktop & Service</p>
+        </div>
+      </div>
+
+      <!-- Power BI Tabs -->
+      <div class="flex border-b border-slate-800 gap-2 text-xs font-bold" id="pbiTabs">
+        <button class="px-4 py-2 text-amber-400 border-b-2 border-amber-400 pbi-tab" data-tab="dax" data-i18n="pbiTabDax">DAX Measures</button>
+        <button class="px-4 py-2 text-slate-400 hover:text-white pbi-tab" data-tab="embed" data-i18n="pbiTabEmbed">Live Embed (iframe)</button>
+        <button class="px-4 py-2 text-slate-400 hover:text-white pbi-tab" data-tab="export" data-i18n="pbiTabExport">Export Power BI Dataset</button>
+      </div>
+
+      <!-- Tab 1: DAX Measures -->
+      <div id="pbiTabContent-dax" class="space-y-4">
+        <p class="text-xs text-slate-300" data-i18n="pbiDaxDesc">Copy and paste these pre-formulated DAX measures into your Power BI model for instant executive KPIs:</p>
+        
+        <div class="space-y-3">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-mono font-bold text-amber-300">Total Oil Production STB/D</span>
+              <button onclick="copyToClipboard('Total Oil Prod (STB/D) = SUM(\'Wells\'[OT_Prod_Rate_STBD])')" class="text-[11px] text-sky-400 hover:text-sky-300"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <code class="text-xs font-mono text-slate-400 block bg-slate-900/60 p-2 rounded">Total Oil Prod (STB/D) = SUM('Wells'[OT_Prod_Rate_STBD])</code>
+          </div>
+
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-mono font-bold text-amber-300">Total Gas Flow Rate MMSCFD</span>
+              <button onclick="copyToClipboard('Total Gas Rate (MMSCFD) = SUM(\'Wells\'[Gas_Rate_MMSCFD])')" class="text-[11px] text-sky-400 hover:text-sky-300"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <code class="text-xs font-mono text-slate-400 block bg-slate-900/60 p-2 rounded">Total Gas Rate (MMSCFD) = SUM('Wells'[Gas_Rate_MMSCFD])</code>
+          </div>
+
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-mono font-bold text-amber-300">Average Wellhead Pressure (Psig)</span>
+              <button onclick="copyToClipboard('Avg WHP (Psig) = AVERAGE(\'Wells\'[WHP_Psig])')" class="text-[11px] text-sky-400 hover:text-sky-300"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <code class="text-xs font-mono text-slate-400 block bg-slate-900/60 p-2 rounded">Avg WHP (Psig) = AVERAGE('Wells'[WHP_Psig])</code>
+          </div>
+
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-mono font-bold text-amber-300">Production Deviation STB/D</span>
+              <button onclick="copyToClipboard('Total Deviation = SUM(\'Wells\'[OT_Prod_Rate_STBD]) - SUM(\'Wells\'[NOC_Prod_bbld])')" class="text-[11px] text-sky-400 hover:text-sky-300"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <code class="text-xs font-mono text-slate-400 block bg-slate-900/60 p-2 rounded">Total Deviation = SUM('Wells'[OT_Prod_Rate_STBD]) - SUM('Wells'[NOC_Prod_bbld])</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Live Embed -->
+      <div id="pbiTabContent-embed" class="space-y-4 hidden">
+        <p class="text-xs text-slate-300" data-i18n="pbiEmbedDesc">Paste your published Power BI report URL (from File > Embed report > Publish to web) to display it directly here:</p>
+        <div class="flex gap-2">
+          <input type="text" id="pbiEmbedUrlInput" placeholder="https://app.powerbi.com/view?r=..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400">
+          <button id="saveEmbedUrlBtn" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">Load Report</button>
+        </div>
+        <div id="pbiEmbedContainer" class="w-full h-80 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center text-slate-500 text-xs overflow-hidden">
+          <span data-i18n="pbiPlaceholderNotice">No Power BI URL entered. Enter a link above to display your online interactive report.</span>
+        </div>
+      </div>
+
+      <!-- Tab 3: Export Power BI Dataset -->
+      <div id="pbiTabContent-export" class="space-y-4 hidden">
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-csv text-emerald-400"></i>
+            <span data-i18n="pbiExportTitle">Ready-to-use CSV Dataset</span>
+          </h4>
+          <p class="text-xs text-slate-400" data-i18n="pbiExportDesc">This file includes all fields (Khabbaz, Kirkuk, Bai Hassan, Jambur) with standardized English column names matching the DAX guide:</p>
+          <button id="downloadPbiCsvBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition">
+            <i class="fa-solid fa-download"></i>
+            <span data-i18n="downloadDatasetBtn">Download All_Fields_Oil_Gas_Data.csv</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Footer -->
-  <footer class="bg-slate-900 border-t border-slate-800 py-4 mt-8 text-center text-xs text-slate-500">
-    <p>داشبورد مراقبة آبار حقل خباز (Khabbaz Oil Field) &bull; تم التطوير بأعلى المعايير الاحترافية &bull; محفوظ في GitHub</p>
+  <footer class="bg-slate-900 border-t border-slate-800 py-5 mt-10 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p data-i18n="footerText">North Oil Company (NOC) &bull; Integrated Surveillance & Well Flow Dashboard &bull; Saved to GitHub</p>
+      <div class="flex items-center gap-3 text-slate-400">
+        <span class="hover:text-sky-400 transition cursor-pointer" onclick="switchField('ALL')">All Fields</span>
+        <span>&bull;</span>
+        <span class="hover:text-sky-400 transition cursor-pointer" onclick="switchField('Khabbaz')">Khabbaz</span>
+        <span>&bull;</span>
+        <span class="hover:text-sky-400 transition cursor-pointer" onclick="switchField('Kirkuk')">Kirkuk</span>
+        <span>&bull;</span>
+        <span class="hover:text-sky-400 transition cursor-pointer" onclick="switchField('Bai Hassan')">Bai Hassan</span>
+        <span>&bull;</span>
+        <span class="hover:text-sky-400 transition cursor-pointer" onclick="switchField('Jambur')">Jambur</span>
+      </div>
+    </div>
   </footer>
 
-  <!-- Application Logic -->
+  <!-- Application Script -->
   <script>
-    // Initial Dataset extracted exactly from user's image (Khabaz_updated.xlsx -> Natural Flow section)
-    const initialData = [
-      // Well 33
-      { well: "33", date: "14/8/2026", choke: "32/64", otChoke: "20/64", type: "T", whp: 1270, chokeUpPress: "NA", nocProd: 750, otProdRate: 1480, deviation: 730, usPress: "", dsPress: "", prodWHP: 1249, gasRate: 2.535, water: 13.7, spGr: 0.844, api: 36.0, bsw: 0.90 },
-      { well: "33", date: "15/8/2026", choke: "36/64", otChoke: "-", type: "T", whp: 1270, chokeUpPress: "NA", nocProd: 750, otProdRate: 1733, deviation: 983, usPress: "", dsPress: "", prodWHP: 1184, gasRate: 3.111, water: 14.3, spGr: 0.842, api: 37.0, bsw: 0.80 },
-      { well: "33", date: "15/8/2026", choke: "42/64", otChoke: "-", type: "T", whp: 1270, chokeUpPress: "NA", nocProd: 750, otProdRate: 2246, deviation: 1496, usPress: "", dsPress: "", prodWHP: 1064, gasRate: 3.781, water: 5.0, spGr: 0.845, api: 36.0, bsw: 0.20 },
-      { well: "33", date: "16/8/2026", choke: "26/64", otChoke: "-", type: "T", whp: 1270, chokeUpPress: "NA", nocProd: 750, otProdRate: 974, deviation: 224, usPress: "", dsPress: "", prodWHP: 1334, gasRate: 1.716, water: 2.3, spGr: 0.842, api: 37.0, bsw: 0.20 },
-      
-      // Well 11
-      { well: "11", date: "26/8/2026", choke: "26/64", otChoke: "", type: "T", whp: 1170, chokeUpPress: "NA", nocProd: 750, otProdRate: 1605, deviation: 855, usPress: "", dsPress: "", prodWHP: 1187, gasRate: 1.763, water: 2.8, spGr: 0.882, api: 29.0, bsw: 0.17 },
-      { well: "11", date: "27/8/2026", choke: "26/64", otChoke: "", type: "T", whp: 1170, chokeUpPress: "NA", nocProd: 750, otProdRate: 1692, deviation: 942, usPress: "", dsPress: "", prodWHP: 1175, gasRate: 1.846, water: 2.6, spGr: 0.882, api: 29.0, bsw: 0.15 },
-      { well: "11", date: "27/8/2026", choke: "30/64", otChoke: "", type: "T", whp: 1170, chokeUpPress: "NA", nocProd: 750, otProdRate: 2395, deviation: 1645, usPress: "", dsPress: "", prodWHP: 1169, gasRate: 2.399, water: 4.2, spGr: 0.882, api: 29.0, bsw: 0.17 },
-      { well: "11", date: "27/8/2026", choke: "34/64", otChoke: "", type: "T", whp: 1170, chokeUpPress: "NA", nocProd: 750, otProdRate: 2459, deviation: 1709, usPress: "", dsPress: "", prodWHP: 1158, gasRate: 3.007, water: 3.8, spGr: 0.881, api: 29.0, bsw: 0.15 },
+    // -------------------------------------------------------------
+    // 1. Initial Dataset (Multi-Field Operations)
+    // -------------------------------------------------------------
+    const initialDataset = [
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "33",
+    "date": "14/8/2026",
+    "choke": "32/64",
+    "otChoke": "20/64",
+    "type": "T",
+    "whp": 1270,
+    "nocProd": 750,
+    "otProdRate": 1480,
+    "deviation": 730,
+    "prodWHP": 1249,
+    "gasRate": 2.535,
+    "water": 13.7,
+    "spGr": 0.844,
+    "api": 36.0,
+    "bsw": 0.9
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "33",
+    "date": "15/8/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1270,
+    "nocProd": 750,
+    "otProdRate": 1733,
+    "deviation": 983,
+    "prodWHP": 1184,
+    "gasRate": 3.111,
+    "water": 14.3,
+    "spGr": 0.842,
+    "api": 37.0,
+    "bsw": 0.8
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "33",
+    "date": "15/8/2026",
+    "choke": "42/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1270,
+    "nocProd": 750,
+    "otProdRate": 2246,
+    "deviation": 1496,
+    "prodWHP": 1064,
+    "gasRate": 3.781,
+    "water": 5.0,
+    "spGr": 0.845,
+    "api": 36.0,
+    "bsw": 0.2
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "33",
+    "date": "16/8/2026",
+    "choke": "26/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1270,
+    "nocProd": 750,
+    "otProdRate": 974,
+    "deviation": 224,
+    "prodWHP": 1334,
+    "gasRate": 1.716,
+    "water": 2.3,
+    "spGr": 0.842,
+    "api": 37.0,
+    "bsw": 0.2
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "11",
+    "date": "26/8/2026",
+    "choke": "26/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1170,
+    "nocProd": 750,
+    "otProdRate": 1605,
+    "deviation": 855,
+    "prodWHP": 1187,
+    "gasRate": 1.763,
+    "water": 2.8,
+    "spGr": 0.882,
+    "api": 29.0,
+    "bsw": 0.17
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "11",
+    "date": "27/8/2026",
+    "choke": "26/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1170,
+    "nocProd": 750,
+    "otProdRate": 1692,
+    "deviation": 942,
+    "prodWHP": 1175,
+    "gasRate": 1.846,
+    "water": 2.6,
+    "spGr": 0.882,
+    "api": 29.0,
+    "bsw": 0.15
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "11",
+    "date": "27/8/2026",
+    "choke": "30/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1170,
+    "nocProd": 750,
+    "otProdRate": 2395,
+    "deviation": 1645,
+    "prodWHP": 1169,
+    "gasRate": 2.399,
+    "water": 4.2,
+    "spGr": 0.882,
+    "api": 29.0,
+    "bsw": 0.17
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "11",
+    "date": "27/8/2026",
+    "choke": "34/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1170,
+    "nocProd": 750,
+    "otProdRate": 2459,
+    "deviation": 1709,
+    "prodWHP": 1158,
+    "gasRate": 3.007,
+    "water": 3.8,
+    "spGr": 0.881,
+    "api": 29.0,
+    "bsw": 0.15
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "35",
+    "date": "5/9/2026",
+    "choke": "32/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1200,
+    "otProdRate": 1754,
+    "deviation": 554,
+    "prodWHP": 1314,
+    "gasRate": 1.904,
+    "water": 2.3,
+    "spGr": 0.881,
+    "api": 29.2,
+    "bsw": 0.1
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "35",
+    "date": "5/9/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1200,
+    "otProdRate": 2170,
+    "deviation": 970,
+    "prodWHP": 1290,
+    "gasRate": 2.448,
+    "water": 0.0,
+    "spGr": 0.881,
+    "api": 29.1,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "35",
+    "date": "6/9/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1200,
+    "otProdRate": 2112,
+    "deviation": 912,
+    "prodWHP": 1288,
+    "gasRate": 2.394,
+    "water": 0.0,
+    "spGr": 0.882,
+    "api": 28.9,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "35",
+    "date": "7/9/2026",
+    "choke": "44/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1200,
+    "otProdRate": 2455,
+    "deviation": 1255,
+    "prodWHP": 1253,
+    "gasRate": 2.741,
+    "water": 0.0,
+    "spGr": 0.884,
+    "api": 28.7,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "35",
+    "date": "7/9/2026",
+    "choke": "48/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1200,
+    "otProdRate": 2671,
+    "deviation": 1471,
+    "prodWHP": 1218,
+    "gasRate": 3.037,
+    "water": 0.0,
+    "spGr": 0.882,
+    "api": 28.9,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "015",
+    "date": "16/9/2026",
+    "choke": "58/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 850,
+    "nocProd": 1000,
+    "otProdRate": 1147,
+    "deviation": 147,
+    "prodWHP": 841,
+    "gasRate": 11.638,
+    "water": 0.0,
+    "spGr": 0.807,
+    "api": 44.0,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "015",
+    "date": "16/9/2026",
+    "choke": "16/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 850,
+    "nocProd": 1000,
+    "otProdRate": 66,
+    "deviation": -934,
+    "prodWHP": 1938,
+    "gasRate": 1.409,
+    "water": 0.0,
+    "spGr": 0.806,
+    "api": 44.0,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "25",
+    "date": "12/10/2026",
+    "choke": "22/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1850,
+    "otProdRate": 925,
+    "deviation": -925,
+    "prodWHP": 1283,
+    "gasRate": 2.336,
+    "water": 60.7,
+    "spGr": 0.899,
+    "api": 26.1,
+    "bsw": 6.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "25",
+    "date": "13/10/2026",
+    "choke": "26/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1850,
+    "otProdRate": 1160,
+    "deviation": -690,
+    "prodWHP": 1246,
+    "gasRate": 3.401,
+    "water": 83.5,
+    "spGr": 0.858,
+    "api": 33.5,
+    "bsw": 6.7
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "25",
+    "date": "14/10/2026",
+    "choke": "30/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1850,
+    "otProdRate": 1169,
+    "deviation": -681,
+    "prodWHP": 1197,
+    "gasRate": 3.311,
+    "water": 142.9,
+    "spGr": 0.869,
+    "api": 31.3,
+    "bsw": 11.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "25",
+    "date": "14/10/2026",
+    "choke": "16/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1312,
+    "nocProd": 1850,
+    "otProdRate": 503,
+    "deviation": -1347,
+    "prodWHP": 1470,
+    "gasRate": 1.371,
+    "water": 0.0,
+    "spGr": 0.845,
+    "api": 36.0,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "22",
+    "date": "23/10/2026",
+    "choke": "24/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1360,
+    "nocProd": 1000,
+    "otProdRate": 668,
+    "deviation": -332,
+    "prodWHP": 1343,
+    "gasRate": 2.518,
+    "water": 0.0,
+    "spGr": 0.853,
+    "api": 34.3,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "22",
+    "date": "24/10/2026",
+    "choke": "28/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1360,
+    "nocProd": 1000,
+    "otProdRate": 722,
+    "deviation": -278,
+    "prodWHP": 1334,
+    "gasRate": 2.632,
+    "water": 0.0,
+    "spGr": 0.85,
+    "api": 35.1,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "22",
+    "date": "24/10/2026",
+    "choke": "32/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1360,
+    "nocProd": 1000,
+    "otProdRate": 958,
+    "deviation": -42,
+    "prodWHP": 1214,
+    "gasRate": 3.778,
+    "water": 0.0,
+    "spGr": 0.853,
+    "api": 34.4,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "22",
+    "date": "25/10/2026",
+    "choke": "20/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1360,
+    "nocProd": 1000,
+    "otProdRate": 437,
+    "deviation": -563,
+    "prodWHP": 1499,
+    "gasRate": 1.575,
+    "water": 0.0,
+    "spGr": 0.837,
+    "api": 37.4,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "43",
+    "date": "3/11/2026",
+    "choke": "28/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1250,
+    "nocProd": 900,
+    "otProdRate": 1405,
+    "deviation": 505,
+    "prodWHP": 1266,
+    "gasRate": 3.069,
+    "water": 0.0,
+    "spGr": 0.838,
+    "api": 37.3,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "43",
+    "date": "4/11/2026",
+    "choke": "24/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1250,
+    "nocProd": 900,
+    "otProdRate": 907,
+    "deviation": 7,
+    "prodWHP": 1416,
+    "gasRate": 2.058,
+    "water": 0.0,
+    "spGr": 0.837,
+    "api": 37.7,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "43",
+    "date": "4/11/2026",
+    "choke": "32/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1250,
+    "nocProd": 900,
+    "otProdRate": 1580,
+    "deviation": 680,
+    "prodWHP": 1232,
+    "gasRate": 3.464,
+    "water": 0.0,
+    "spGr": 0.839,
+    "api": 37.2,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "43",
+    "date": "5/11/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1250,
+    "nocProd": 900,
+    "otProdRate": 1890,
+    "deviation": 990,
+    "prodWHP": 1119,
+    "gasRate": 4.062,
+    "water": 0.0,
+    "spGr": 0.838,
+    "api": 37.4,
+    "bsw": 0.0
+  },
+  {
+    "field": "Khabbaz",
+    "fieldAr": "حقل خباز",
+    "well": "43",
+    "date": "5/11/2026",
+    "choke": "40/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1250,
+    "nocProd": 900,
+    "otProdRate": 2085,
+    "deviation": 1185,
+    "prodWHP": 1038,
+    "gasRate": 4.605,
+    "water": 0.0,
+    "spGr": 0.84,
+    "api": 36.9,
+    "bsw": 0.0
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-112",
+    "date": "10/10/2026",
+    "choke": "48/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1420,
+    "nocProd": 3500,
+    "otProdRate": 3850,
+    "deviation": 350,
+    "prodWHP": 1380,
+    "gasRate": 5.2,
+    "water": 0.0,
+    "spGr": 0.845,
+    "api": 35.8,
+    "bsw": 0.1
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-112",
+    "date": "11/10/2026",
+    "choke": "40/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1420,
+    "nocProd": 3500,
+    "otProdRate": 3200,
+    "deviation": -300,
+    "prodWHP": 1410,
+    "gasRate": 4.32,
+    "water": 0.0,
+    "spGr": 0.846,
+    "api": 35.7,
+    "bsw": 0.1
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-176",
+    "date": "18/10/2026",
+    "choke": "52/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1380,
+    "nocProd": 4000,
+    "otProdRate": 4280,
+    "deviation": 280,
+    "prodWHP": 1320,
+    "gasRate": 6.15,
+    "water": 1.2,
+    "spGr": 0.843,
+    "api": 36.2,
+    "bsw": 0.15
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-176",
+    "date": "19/10/2026",
+    "choke": "44/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1380,
+    "nocProd": 4000,
+    "otProdRate": 3750,
+    "deviation": -250,
+    "prodWHP": 1365,
+    "gasRate": 5.4,
+    "water": 1.0,
+    "spGr": 0.843,
+    "api": 36.2,
+    "bsw": 0.12
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-204",
+    "date": "25/10/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1450,
+    "nocProd": 2800,
+    "otProdRate": 2920,
+    "deviation": 120,
+    "prodWHP": 1415,
+    "gasRate": 3.9,
+    "water": 0.0,
+    "spGr": 0.847,
+    "api": 35.5,
+    "bsw": 0.05
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-204",
+    "date": "26/10/2026",
+    "choke": "32/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1450,
+    "nocProd": 2800,
+    "otProdRate": 2540,
+    "deviation": -260,
+    "prodWHP": 1440,
+    "gasRate": 3.35,
+    "water": 0.0,
+    "spGr": 0.847,
+    "api": 35.5,
+    "bsw": 0.05
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-315",
+    "date": "2/11/2026",
+    "choke": "40/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1310,
+    "nocProd": 3200,
+    "otProdRate": 3050,
+    "deviation": -150,
+    "prodWHP": 1275,
+    "gasRate": 4.45,
+    "water": 4.5,
+    "spGr": 0.85,
+    "api": 34.9,
+    "bsw": 0.4
+  },
+  {
+    "field": "Kirkuk",
+    "fieldAr": "حقل كركوك",
+    "well": "K-420",
+    "date": "8/11/2026",
+    "choke": "48/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1290,
+    "nocProd": 3600,
+    "otProdRate": 3710,
+    "deviation": 110,
+    "prodWHP": 1240,
+    "gasRate": 5.8,
+    "water": 2.1,
+    "spGr": 0.844,
+    "api": 36.0,
+    "bsw": 0.2
+  },
+  {
+    "field": "Bai Hassan",
+    "fieldAr": "حقل باي حسن",
+    "well": "BH-22",
+    "date": "15/10/2026",
+    "choke": "32/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1180,
+    "nocProd": 2200,
+    "otProdRate": 2410,
+    "deviation": 210,
+    "prodWHP": 1140,
+    "gasRate": 2.85,
+    "water": 3.0,
+    "spGr": 0.858,
+    "api": 33.4,
+    "bsw": 0.25
+  },
+  {
+    "field": "Bai Hassan",
+    "fieldAr": "حقل باي حسن",
+    "well": "BH-22",
+    "date": "16/10/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1180,
+    "nocProd": 2200,
+    "otProdRate": 2680,
+    "deviation": 480,
+    "prodWHP": 1110,
+    "gasRate": 3.15,
+    "water": 3.5,
+    "spGr": 0.858,
+    "api": 33.4,
+    "bsw": 0.28
+  },
+  {
+    "field": "Bai Hassan",
+    "fieldAr": "حقل باي حسن",
+    "well": "BH-45",
+    "date": "22/10/2026",
+    "choke": "40/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1220,
+    "nocProd": 2600,
+    "otProdRate": 2780,
+    "deviation": 180,
+    "prodWHP": 1175,
+    "gasRate": 3.4,
+    "water": 5.2,
+    "spGr": 0.856,
+    "api": 33.8,
+    "bsw": 0.35
+  },
+  {
+    "field": "Bai Hassan",
+    "fieldAr": "حقل باي حسن",
+    "well": "BH-45",
+    "date": "23/10/2026",
+    "choke": "44/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1220,
+    "nocProd": 2600,
+    "otProdRate": 2950,
+    "deviation": 350,
+    "prodWHP": 1150,
+    "gasRate": 3.75,
+    "water": 5.5,
+    "spGr": 0.856,
+    "api": 33.7,
+    "bsw": 0.38
+  },
+  {
+    "field": "Bai Hassan",
+    "fieldAr": "حقل باي حسن",
+    "well": "BH-78",
+    "date": "29/10/2026",
+    "choke": "28/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1250,
+    "nocProd": 1800,
+    "otProdRate": 1720,
+    "deviation": -80,
+    "prodWHP": 1220,
+    "gasRate": 2.1,
+    "water": 0.5,
+    "spGr": 0.855,
+    "api": 34.0,
+    "bsw": 0.1
+  },
+  {
+    "field": "Bai Hassan",
+    "fieldAr": "حقل باي حسن",
+    "well": "BH-91",
+    "date": "5/11/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1150,
+    "nocProd": 2400,
+    "otProdRate": 2350,
+    "deviation": -50,
+    "prodWHP": 1105,
+    "gasRate": 2.95,
+    "water": 8.0,
+    "spGr": 0.86,
+    "api": 32.9,
+    "bsw": 0.6
+  },
+  {
+    "field": "Jambur",
+    "fieldAr": "حقل جمبور",
+    "well": "J-14",
+    "date": "12/10/2026",
+    "choke": "28/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1520,
+    "nocProd": 1600,
+    "otProdRate": 1850,
+    "deviation": 250,
+    "prodWHP": 1490,
+    "gasRate": 4.8,
+    "water": 0.0,
+    "spGr": 0.827,
+    "api": 39.5,
+    "bsw": 0.05
+  },
+  {
+    "field": "Jambur",
+    "fieldAr": "حقل جمبور",
+    "well": "J-14",
+    "date": "13/10/2026",
+    "choke": "32/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1520,
+    "nocProd": 1600,
+    "otProdRate": 2100,
+    "deviation": 500,
+    "prodWHP": 1460,
+    "gasRate": 5.45,
+    "water": 0.0,
+    "spGr": 0.826,
+    "api": 39.7,
+    "bsw": 0.05
+  },
+  {
+    "field": "Jambur",
+    "fieldAr": "حقل جمبور",
+    "well": "J-28",
+    "date": "20/10/2026",
+    "choke": "36/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1480,
+    "nocProd": 2100,
+    "otProdRate": 2230,
+    "deviation": 130,
+    "prodWHP": 1425,
+    "gasRate": 5.6,
+    "water": 0.0,
+    "spGr": 0.824,
+    "api": 40.2,
+    "bsw": 0.0
+  },
+  {
+    "field": "Jambur",
+    "fieldAr": "حقل جمبور",
+    "well": "J-33",
+    "date": "28/10/2026",
+    "choke": "40/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1410,
+    "nocProd": 2500,
+    "otProdRate": 2680,
+    "deviation": 180,
+    "prodWHP": 1360,
+    "gasRate": 6.9,
+    "water": 0.8,
+    "spGr": 0.826,
+    "api": 39.8,
+    "bsw": 0.08
+  },
+  {
+    "field": "Jambur",
+    "fieldAr": "حقل جمبور",
+    "well": "J-33",
+    "date": "29/10/2026",
+    "choke": "44/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1410,
+    "nocProd": 2500,
+    "otProdRate": 2890,
+    "deviation": 390,
+    "prodWHP": 1330,
+    "gasRate": 7.4,
+    "water": 1.0,
+    "spGr": 0.825,
+    "api": 39.8,
+    "bsw": 0.1
+  },
+  {
+    "field": "Jambur",
+    "fieldAr": "حقل جمبور",
+    "well": "J-48",
+    "date": "6/11/2026",
+    "choke": "24/64",
+    "otChoke": "-",
+    "type": "T",
+    "whp": 1590,
+    "nocProd": 1400,
+    "otProdRate": 1320,
+    "deviation": -80,
+    "prodWHP": 1555,
+    "gasRate": 3.5,
+    "water": 0.0,
+    "spGr": 0.82,
+    "api": 41.0,
+    "bsw": 0.0
+  }
+];
 
-      // Well 35
-      { well: "35", date: "5/9/2026", choke: "32/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1200, otProdRate: 1754, deviation: 554, usPress: "", dsPress: "", prodWHP: 1314, gasRate: 1.904, water: 2.3, spGr: 0.881, api: 29.2, bsw: 0.10 },
-      { well: "35", date: "5/9/2026", choke: "36/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1200, otProdRate: 2170, deviation: 970, usPress: "", dsPress: "", prodWHP: 1290, gasRate: 2.448, water: 0.0, spGr: 0.881, api: 29.1, bsw: 0.00 },
-      { well: "35", date: "6/9/2026", choke: "36/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1200, otProdRate: 2112, deviation: 912, usPress: "", dsPress: "", prodWHP: 1288, gasRate: 2.394, water: 0.0, spGr: 0.882, api: 28.9, bsw: 0.00 },
-      { well: "35", date: "7/9/2026", choke: "44/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1200, otProdRate: 2455, deviation: 1255, usPress: "", dsPress: "", prodWHP: 1253, gasRate: 2.741, water: 0.0, spGr: 0.884, api: 28.7, bsw: 0.00 },
-      { well: "35", date: "7/9/2026", choke: "48/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1200, otProdRate: 2671, deviation: 1471, usPress: "", dsPress: "", prodWHP: 1218, gasRate: 3.037, water: 0.0, spGr: 0.882, api: 28.9, bsw: 0.00 },
-
-      // Well 015
-      { well: "015", date: "16/9/2026", choke: "58/64", otChoke: "NA", type: "T", whp: 850, chokeUpPress: "NA", nocProd: 1000, otProdRate: 1147, deviation: 147, usPress: "", dsPress: "", prodWHP: 841, gasRate: 11.638, water: 0.0, spGr: 0.807, api: 44.0, bsw: 0.00 },
-      { well: "015", date: "16/9/2026", choke: "16/64", otChoke: "NA", type: "T", whp: 850, chokeUpPress: "NA", nocProd: 1000, otProdRate: 66, deviation: -934, usPress: "", dsPress: "", prodWHP: 1938, gasRate: 1.409, water: 0.0, spGr: 0.806, api: 44.0, bsw: 0.00 },
-
-      // Well 25
-      { well: "25", date: "12/10/2026", choke: "22/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1850, otProdRate: 925, deviation: -925, usPress: "", dsPress: "", prodWHP: 1283, gasRate: 2.336, water: 60.7, spGr: 0.899, api: 26.1, bsw: 6.00 },
-      { well: "25", date: "13/10/2026", choke: "26/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1850, otProdRate: 1160, deviation: -690, usPress: "", dsPress: "", prodWHP: 1246, gasRate: 3.401, water: 83.5, spGr: 0.858, api: 33.5, bsw: 6.70 },
-      { well: "25", date: "14/10/2026", choke: "30/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1850, otProdRate: 1169, deviation: -681, usPress: "", dsPress: "", prodWHP: 1197, gasRate: 3.311, water: 142.9, spGr: 0.869, api: 31.3, bsw: 11.00 },
-      { well: "25", date: "14/10/2026", choke: "16/64", otChoke: "NA", type: "T", whp: 1312, chokeUpPress: "NA", nocProd: 1850, otProdRate: 503, deviation: -1347, usPress: "", dsPress: "", prodWHP: 1470, gasRate: 1.371, water: 0.0, spGr: 0.845, api: 36.0, bsw: 0.00 },
-
-      // Well 22
-      { well: "22", date: "23/10/2026", choke: "24/64", otChoke: "NA", type: "T", whp: 1360, chokeUpPress: "NA", nocProd: 1000, otProdRate: 668, deviation: -332, usPress: "", dsPress: "", prodWHP: 1343, gasRate: 2.518, water: 0.0, spGr: 0.853, api: 34.3, bsw: 0.00 },
-      { well: "22", date: "24/10/2026", choke: "28/64", otChoke: "NA", type: "T", whp: 1360, chokeUpPress: "NA", nocProd: 1000, otProdRate: 722, deviation: -278, usPress: "", dsPress: "", prodWHP: 1334, gasRate: 2.632, water: 0.0, spGr: 0.850, api: 35.1, bsw: 0.00 },
-      { well: "22", date: "24/10/2026", choke: "32/64", otChoke: "NA", type: "T", whp: 1360, chokeUpPress: "NA", nocProd: 1000, otProdRate: 958, deviation: -42, usPress: "", dsPress: "", prodWHP: 1214, gasRate: 3.778, water: 0.0, spGr: 0.853, api: 34.4, bsw: 0.00 },
-      { well: "22", date: "25/10/2026", choke: "20/64", otChoke: "NA", type: "T", whp: 1360, chokeUpPress: "NA", nocProd: 1000, otProdRate: 437, deviation: -563, usPress: "", dsPress: "", prodWHP: 1499, gasRate: 1.575, water: 0.0, spGr: 0.837, api: 37.4, bsw: 0.00 },
-
-      // Well 43
-      { well: "43", date: "3/11/2026", choke: "28/64", otChoke: "NA", type: "T", whp: 1250, chokeUpPress: "NA", nocProd: 900, otProdRate: 1405, deviation: 505, usPress: "", dsPress: "", prodWHP: 1266, gasRate: 3.069, water: 0.0, spGr: 0.838, api: 37.3, bsw: 0.00 },
-      { well: "43", date: "4/11/2026", choke: "24/64", otChoke: "NA", type: "T", whp: 1250, chokeUpPress: "NA", nocProd: 900, otProdRate: 907, deviation: 7, usPress: "", dsPress: "", prodWHP: 1416, gasRate: 2.058, water: 0.0, spGr: 0.837, api: 37.7, bsw: 0.00 },
-      { well: "43", date: "4/11/2026", choke: "32/64", otChoke: "NA", type: "T", whp: 1250, chokeUpPress: "NA", nocProd: 900, otProdRate: 1580, deviation: 680, usPress: "", dsPress: "", prodWHP: 1232, gasRate: 3.464, water: 0.0, spGr: 0.839, api: 37.2, bsw: 0.00 },
-      { well: "43", date: "5/11/2026", choke: "36/64", otChoke: "NA", type: "T", whp: 1250, chokeUpPress: "NA", nocProd: 900, otProdRate: 1890, deviation: 990, usPress: "", dsPress: "", prodWHP: 1119, gasRate: 4.062, water: 0.0, spGr: 0.838, api: 37.4, bsw: 0.00 },
-      { well: "43", date: "5/11/2026", choke: "40/64", otChoke: "NA", type: "T", whp: 1250, chokeUpPress: "NA", nocProd: 900, otProdRate: 2085, deviation: 1185, usPress: "", dsPress: "", prodWHP: 1038, gasRate: 4.605, water: 0.0, spGr: 0.840, api: 36.9, bsw: 0.00 }
-    ];
-
-    let currentDataset = [...initialData];
+    let currentDataset = [...initialDataset];
+    let selectedField = 'ALL';
+    let currentLang = localStorage.getItem('dashboard_lang') || 'en'; // Default is English!
     let charts = {};
 
-    // Populate Choke Filter options
-    function populateChokeOptions(data) {
-      const chokeSelect = document.getElementById('chokeFilter');
-      const uniqueChokes = [...new Set(data.map(d => d.choke).filter(Boolean))].sort();
-      chokeSelect.innerHTML = '<option value="ALL">جميع الأحجام</option>';
+    // -------------------------------------------------------------
+    // 2. Bilingual Dictionary (i18n)
+    // -------------------------------------------------------------
+    const i18n = {
+      en: {
+        appTitle: "Oil & Gas Fields Operations Dashboard",
+        appBadge: "Multi-Field Surveillance",
+        appSubtitle: "Consolidated surveillance of all fields and individual well flow testing analytics (NOC Operations)",
+        powerBiHubBtn: "Power BI Hub",
+        uploadExcelBtn: "Upload Excel (.xlsx)",
+        exportCsvBtn: "Export CSV",
+        printBtn: "Print",
+        currentViewLabel: "Current View:",
+        allFieldsTab: "All Fields Overview",
+        fieldsSummaryTitle: "Oil Fields Performance Summary",
+        fieldsSummarySubtitle: "Click any field to drill down into its individual wells",
+        filterFieldLabel: "Field:",
+        filterWellLabel: "Well No:",
+        filterChokeLabel: "Choke Size:",
+        searchPlaceholder: "Search by Well, Field, Date, Choke...",
+        resetFiltersBtn: "Reset Slicers",
+        kpiWellsTitle: "Monitored Wells",
+        kpiOilTitle: "Total Oil Production",
+        kpiGasTitle: "Total Gas Flow",
+        kpiWhpTitle: "Avg Wellhead Pressure",
+        kpiApiTitle: "Crude Oil Gravity",
+        kpiWaterTitle: "Produced Water",
+        activeWellTests: "Active Well Tests",
+        allWellsOption: "All Wells",
+        allChokesOption: "All Chokes",
+        allFieldsOption: "All Oil Fields (Consolidated)",
+        tableTitle: "Complete Well Test & Surveillance Records",
+        tableSubtitle: "Natural flow and choke performance test logs",
+        tableShowing: "Showing:",
+        tableRecords: "records",
+        tableEmpty: "No matching records found for the selected filters.",
+        pbiModalTitle: "Power BI Integration Hub",
+        pbiModalSubtitle: "Connect your oil field data directly to Microsoft Power BI Desktop & Service",
+        pbiTabDax: "DAX Measures",
+        pbiTabEmbed: "Live Embed (iframe)",
+        pbiTabExport: "Export Power BI Dataset",
+        pbiDaxDesc: "Copy and paste these pre-formulated DAX measures into your Power BI model for instant executive KPIs:",
+        pbiEmbedDesc: "Paste your published Power BI report URL (from File > Embed report > Publish to web) to display it directly here:",
+        pbiPlaceholderNotice: "No Power BI URL entered. Enter a link above to display your online interactive report.",
+        pbiExportTitle: "Ready-to-use CSV Dataset",
+        pbiExportDesc: "This file includes all fields (Khabbaz, Kirkuk, Bai Hassan, Jambur) with standardized English column names matching the DAX guide:",
+        downloadDatasetBtn: "Download All_Fields_Oil_Gas_Data.csv",
+        footerText: "North Oil Company (NOC) • Integrated Surveillance & Well Flow Dashboard • Saved to GitHub",
+        // Table Columns
+        colField: "Field",
+        colWell: "Well No.",
+        colDate: "WT Date",
+        colChoke: "Choke",
+        colType: "Type",
+        colWhp: "WHP (Psig)",
+        colNoc: "NOC (bbl/d)",
+        colOtProd: "OT Prod Rate",
+        colDev: "Deviation",
+        colProdWhp: "Prod WH.P",
+        colGas: "Gas (MMSCFD)",
+        colWater: "Water (STB/D)",
+        colSpGr: "Sp.Gr",
+        colApi: "API°",
+        colBsw: "BS&W %",
+        // Charts Titles & Subtitles
+        chart1TitleAll: "Oil Production & Gas Rate by Field",
+        chart1SubAll: "Comparison across all operating fields (STB/D vs MMSCFD)",
+        chart1TitleWell: "Oil Production & Gas Rate by Well",
+        chart1SubWell: "Individual well flow comparison for the selected field",
+        chart2TitleAll: "Production Share Contribution by Field (%)",
+        chart2SubAll: "Share of each field in total company oil output",
+        chart2TitleWell: "Well Production Share Distribution (%)",
+        chart2SubWell: "Relative contribution of each well in this field",
+        chart3TitleAll: "Production Deviation vs Target by Field",
+        chart3SubAll: "Net surplus (+) or deficit (-) against NOC production quotas",
+        chart3TitleWell: "Well Target Deviation (Actual vs Quota)",
+        chart3SubWell: "Surplus (+) or deficit (-) per well test point",
+        chart4TitleAll: "Average Reservoir Pressure by Field (WHP Psig)",
+        chart4SubAll: "Wellhead surface pressure comparison across reservoirs",
+        chart4TitleWell: "Wellhead Pressure Behavior (WHP Psig)",
+        chart4SubWell: "Pressure decline curve vs flow choke sizes"
+      },
+      ar: {
+        appTitle: "لوحة عمليات ومراقبة حقول النفط والغاز",
+        appBadge: "مراقبة شاملة لكافة الحقول",
+        appSubtitle: "المنظومة الموحدة لمراقبة جميع الحقول مجتمعة وتفاصيل الآبار واختبارات الجريان (شركة نفط الشمال)",
+        powerBiHubBtn: "مركز Power BI",
+        uploadExcelBtn: "رفع ملف إكسل (.xlsx)",
+        exportCsvBtn: "تصدير CSV",
+        printBtn: "طباعة",
+        currentViewLabel: "النطاق الحالي:",
+        allFieldsTab: "جميع الحقول (نظرة شاملة)",
+        fieldsSummaryTitle: "ملخص أداء حقول النفط والغاز",
+        fieldsSummarySubtitle: "اضغط على أي حقل للانتقال مباشرة إلى تفاصيل آباره",
+        filterFieldLabel: "الحقل:",
+        filterWellLabel: "رقم البئر:",
+        filterChokeLabel: "حجم الخانق:",
+        searchPlaceholder: "بحث برقم البئر، الحقل، التاريخ، الخانق...",
+        resetFiltersBtn: "إعادة ضبط الفلاتر",
+        kpiWellsTitle: "عدد الآبار المراقبة",
+        kpiOilTitle: "إجمالي إنتاج النفط",
+        kpiGasTitle: "معدل تدفق الغاز",
+        kpiWhpTitle: "متوسط ضغط رأس البئر",
+        kpiApiTitle: "كثافة النفط الخام",
+        kpiWaterTitle: "الماء المصاحب",
+        activeWellTests: "فحوصات الآبار النشطة",
+        allWellsOption: "جميع الآبار",
+        allChokesOption: "جميع الأحجام",
+        allFieldsOption: "جميع الحقول النفطية (المجمعة)",
+        tableTitle: "جدول قراءات واختبارات الآبار الكامل",
+        tableSubtitle: "سجلات اختبارات الجريان الطبيعي وأداء الخوانق",
+        tableShowing: "عرض:",
+        tableRecords: "سجل",
+        tableEmpty: "لا توجد سجلات مطابقة لمعايير البحث المحددة.",
+        pbiModalTitle: "مركز تكامل Power BI",
+        pbiModalSubtitle: "ربط بيانات الحقول والآبار مباشرة مع Microsoft Power BI Desktop & Service",
+        pbiTabDax: "معادلات DAX",
+        pbiTabEmbed: "تضمين التقرير (iframe)",
+        pbiTabExport: "تصدير بيانات Power BI",
+        pbiDaxDesc: "انسخ معادلات DAX الجاهزة مباشرة والصقها في Power BI لحساب مؤشرات الإنتاج الفورية:",
+        pbiEmbedDesc: "الصق رابط التقرير المنشور (من File > Embed report > Publish to web) ليعمل التقرير مباشرة هنا:",
+        pbiPlaceholderNotice: "لم يتم إدخال رابط Power BI. أدخل رابط التقرير التفاعلي أعلاه لعرضه هنا.",
+        pbiExportTitle: "ملف بيانات CSV مهيأ للتحميل",
+        pbiExportDesc: "ملف يحتوي على بيانات جميع الحقول (خباز، كركوك، باي حسن، جمبور) مع أسماء أعمدة قياسية مطابقة لدليل Power BI:",
+        downloadDatasetBtn: "تحميل ملف All_Fields_Oil_Gas_Data.csv",
+        footerText: "شركة نفط الشمال (NOC) • منظومة مراقبة الحقول والآبار المتكاملة • محفوظ في GitHub",
+        // Table Columns
+        colField: "الحقل",
+        colWell: "رقم البئر",
+        colDate: "تاريخ الاختبار",
+        colChoke: "حجم الخانق",
+        colType: "نوع الإنتاج",
+        colWhp: "ضغط رأس البئر (Psig)",
+        colNoc: "مستهدف NOC (bbl/d)",
+        colOtProd: "الإنتاج الفعلي (STB/D)",
+        colDev: "الانحراف (Deviation)",
+        colProdWhp: "ضغط الجريان (Prod WH.P)",
+        colGas: "معدل الغاز (MMSCFD)",
+        colWater: "الماء المصاحب (STB/D)",
+        colSpGr: "الوزن النوعي",
+        colApi: "درجة API°",
+        colBsw: "الشوائب والماء %",
+        // Charts Titles & Subtitles
+        chart1TitleAll: "مقارنة إنتاج النفط والغاز بين الحقول",
+        chart1SubAll: "معدل البراميل يومياً (STB/D) مقابل الغاز (MMSCFD) لكل حقل",
+        chart1TitleWell: "إنتاج النفط ومعدل الغاز لكل بئر",
+        chart1SubWell: "مقارنة تدفق الآبار للحقل المحدد",
+        chart2TitleAll: "حصة كل حقل من إجمالي الإنتاج (%)",
+        chart2SubAll: "النسبة المئوية لمساهمة كل حقل في إنتاج النفط الإجمالي",
+        chart2TitleWell: "حصة الآبار من إنتاج الحقل (%)",
+        chart2SubWell: "مساهمة كل بئر في إنتاج هذا الحقل",
+        chart3TitleAll: "الانحراف عن مستهدفات NOC حسب الحقل",
+        chart3SubAll: "الفائض الإنتاجي (+) أو العجز (-) مقارنة بالحصص المعتمدة",
+        chart3TitleWell: "انحراف إنتاج البئر عن المستهدف",
+        chart3SubWell: "مقارنة الإنتاج الفعلي بالمستهدف لكل بئر",
+        chart4TitleAll: "متوسط ضغوط المكامن حسب الحقول (WHP Psig)",
+        chart4SubAll: "مقارنة متوسط ضغط رأس البئر لجميع الحقول",
+        chart4TitleWell: "سلوك ضغط رأس البئر (WHP Psig)",
+        chart4SubWell: "منحنى تغير الضغط عبر أحجام الخوانق المختلفة"
+      }
+    };
+
+    function t(key) {
+      return (i18n[currentLang] && i18n[currentLang][key]) || (i18n['en'][key]) || key;
+    }
+
+    // Metadata for each field
+    const fieldMetadata = {
+      "Khabbaz": {
+        nameEn: "Khabbaz Field",
+        nameAr: "حقل خباز",
+        color: "sky",
+        icon: "fa-oil-well",
+        formationEn: "Jeribe & Euphrates Formations (Natural Flow & Gas Lift)",
+        formationAr: "مكامن الجريبي والفرات (تدفق طبيعي ورفع غازي)",
+        locationEn: "Kirkuk Governorate (Southwest of Kirkuk city)",
+        locationAr: "محافظة كركوك (جنوب غرب مدينة كركوك)",
+        badgeClass: "bg-sky-500/20 text-sky-400 border border-sky-500/30"
+      },
+      "Kirkuk": {
+        nameEn: "Kirkuk Field",
+        nameAr: "حقل كركوك",
+        color: "amber",
+        icon: "fa-fire",
+        formationEn: "Main Kirkuk Group - Baba & Avana Domes",
+        formationAr: "مجموعة كركوك الرئيسية - قبة بابا وأفانا",
+        locationEn: "Kirkuk Central Basin",
+        locationAr: "حوض كركوك المركزي",
+        badgeClass: "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+      },
+      "Bai Hassan": {
+        nameEn: "Bai Hassan Field",
+        nameAr: "حقل باي حسن",
+        color: "emerald",
+        icon: "fa-industry",
+        formationEn: "Pilaspi & Oligocene Formations",
+        formationAr: "تكوينات بيلاسبي والأوليغوسين",
+        locationEn: "Northwest of Kirkuk",
+        locationAr: "شمال غرب مدينة كركوك",
+        badgeClass: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+      },
+      "Jambur": {
+        nameEn: "Jambur Field",
+        nameAr: "حقل جمبور",
+        color: "purple",
+        icon: "fa-gas-pump",
+        formationEn: "Jeribe & Transitional Reservoirs (High GOR)",
+        formationAr: "مكامن الجريبي والانتقالية (نسبة غاز عالية)",
+        locationEn: "Southeast of Kirkuk",
+        locationAr: "جنوب شرق مدينة كركوك",
+        badgeClass: "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+      }
+    };
+
+    // -------------------------------------------------------------
+    // 3. Language Switching Logic
+    // -------------------------------------------------------------
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('dashboard_lang', lang);
+
+      // Set HTML document properties
+      document.documentElement.lang = lang;
+      document.documentElement.dir = (lang === 'ar' ? 'rtl' : 'ltr');
+
+      // Update button label
+      const langBtnLabel = document.getElementById('langToggleLabel');
+      langBtnLabel.textContent = (lang === 'en' ? 'العربية' : 'English');
+
+      // Update all data-i18n elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (key && i18n[lang][key]) {
+          el.textContent = i18n[lang][key];
+        }
+      });
+
+      // Update search placeholder
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.placeholder = t('searchPlaceholder');
+      }
+
+      // Update table header alignment & titles
+      updateTableHeaders();
+
+      // Re-render UI components
+      renderFieldTabs();
+      renderFieldProfileBanner();
+      renderFieldsSummaryGrid();
+      populateFilterOptions();
+      applyFilters();
+    }
+
+    function toggleLanguage() {
+      const nextLang = (currentLang === 'en' ? 'ar' : 'en');
+      setLanguage(nextLang);
+    }
+
+    function updateTableHeaders() {
+      const cols = [
+        { id: 'field', key: 'colField', align: 'text-start' },
+        { id: 'well', key: 'colWell', align: 'text-center' },
+        { id: 'date', key: 'colDate', align: 'text-start' },
+        { id: 'choke', key: 'colChoke', align: 'text-center' },
+        { id: 'type', key: 'colType', align: 'text-center' },
+        { id: 'whp', key: 'colWhp', align: 'text-start' },
+        { id: 'noc', key: 'colNoc', align: 'text-start' },
+        { id: 'otProd', key: 'colOtProd', align: 'text-start' },
+        { id: 'dev', key: 'colDev', align: 'text-start' },
+        { id: 'prodWhp', key: 'colProdWhp', align: 'text-start' },
+        { id: 'gas', key: 'colGas', align: 'text-start' },
+        { id: 'water', key: 'colWater', align: 'text-start' },
+        { id: 'spGr', key: 'colSpGr', align: 'text-start' },
+        { id: 'api', key: 'colApi', align: 'text-start' },
+        { id: 'bsw', key: 'colBsw', align: 'text-start' }
+      ];
+
+      cols.forEach(col => {
+        const th = document.querySelector(`th[data-col="${col.id}"]`);
+        if (th) {
+          th.textContent = t(col.key);
+          th.className = `py-3 px-3.5 ${col.align} font-bold uppercase tracking-wider`;
+          if (col.id === 'otProd') th.classList.add('text-emerald-400');
+          if (col.id === 'gas') th.classList.add('text-amber-400');
+          if (col.id === 'water') th.classList.add('text-cyan-400');
+          if (col.id === 'api') th.classList.add('text-purple-400');
+        }
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 4. Field Switcher & Tabs Rendering
+    // -------------------------------------------------------------
+    function renderFieldTabs() {
+      const container = document.getElementById('fieldTabsContainer');
+      const fields = ['ALL', 'Khabbaz', 'Kirkuk', 'Bai Hassan', 'Jambur'];
+
+      container.innerHTML = fields.map(f => {
+        const isActive = (selectedField === f);
+        let label = '';
+        let icon = 'fa-cubes';
+
+        if (f === 'ALL') {
+          label = t('allFieldsTab');
+          icon = 'fa-earth-americas';
+        } else {
+          label = (currentLang === 'ar' ? fieldMetadata[f].nameAr : fieldMetadata[f].nameEn);
+          icon = fieldMetadata[f].icon;
+        }
+
+        const activeClasses = isActive 
+          ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30 font-bold border-sky-500' 
+          : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white border-slate-700 font-semibold';
+
+        return `
+          <button onclick="switchField('${f}')" class="px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-2 border transition-all ${activeClasses}">
+            <i class="fa-solid ${icon}"></i>
+            <span>${label}</span>
+          </button>
+        `;
+      }).join('');
+
+      // Update badge
+      const activeBadge = document.getElementById('activeFieldBadge');
+      if (selectedField === 'ALL') {
+        activeBadge.textContent = t('allFieldsOption');
+      } else {
+        activeBadge.textContent = (currentLang === 'ar' ? fieldMetadata[selectedField].nameAr : fieldMetadata[selectedField].nameEn);
+      }
+    }
+
+    function switchField(fieldName) {
+      selectedField = fieldName;
+      document.getElementById('fieldFilterSelect').value = fieldName;
+      renderFieldTabs();
+      renderFieldProfileBanner();
+      populateFilterOptions();
+      applyFilters();
+    }
+
+    // -------------------------------------------------------------
+    // 5. Field Banner & Multi-Field Cards
+    // -------------------------------------------------------------
+    function renderFieldProfileBanner() {
+      const banner = document.getElementById('fieldProfileCard');
+      const multiGrid = document.getElementById('multiFieldGridSection');
+
+      if (selectedField === 'ALL') {
+        multiGrid.classList.remove('hidden');
+        banner.innerHTML = `
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-2xl font-bold shrink-0">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="text-base sm:text-lg font-black text-white">
+                    ${currentLang === 'ar' ? 'جميع حقول شركة نفط الشمال (المنظومة الموحدة)' : 'Consolidated North Oil Company (NOC) Fields'}
+                  </h2>
+                  <span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">4 Operating Fields</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  ${currentLang === 'ar' ? 'عرض شامل وموحد لمؤشرات الإنتاج والآبار لحقول خباز، كركوك، باي حسن، وجمبور.' : 'Integrated surveillance covering Khabbaz, Kirkuk, Bai Hassan, and Jambur oil and gas fields.'}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs shrink-0">
+              <span class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-2 font-mono">
+                <i class="fa-solid fa-database text-sky-400"></i>
+                <span id="totalRecordsBadge">${currentDataset.length} ${t('tableRecords')}</span>
+              </span>
+            </div>
+          </div>
+        `;
+      } else {
+        multiGrid.classList.add('hidden');
+        const meta = fieldMetadata[selectedField];
+        const fieldRows = currentDataset.filter(d => d.field === selectedField);
+        const uniqueWells = new Set(fieldRows.map(d => d.well)).size;
+
+        banner.innerHTML = `
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-${meta.color}-500/20 text-${meta.color}-400 flex items-center justify-center text-2xl font-bold shrink-0">
+                <i class="fa-solid ${meta.icon}"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h2 class="text-base sm:text-lg font-black text-white">
+                    ${currentLang === 'ar' ? meta.nameAr : meta.nameEn}
+                  </h2>
+                  <span class="text-xs ${meta.badgeClass} px-2 py-0.5 rounded-full font-bold">
+                    ${uniqueWells} ${currentLang === 'ar' ? 'آبار مراقبة' : 'Monitored Wells'}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  ${currentLang === 'ar' ? meta.formationAr : meta.formationEn} &bull; ${currentLang === 'ar' ? meta.locationAr : meta.locationEn}
+                </p>
+              </div>
+            </div>
+            <button onclick="switchField('ALL')" class="bg-slate-800 hover:bg-slate-700 text-sky-400 text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-700 flex items-center gap-2 transition shrink-0">
+              <i class="fa-solid fa-arrow-left rtl:rotate-180"></i>
+              <span>${currentLang === 'ar' ? 'الرجوع لنظرة جميع الحقول' : 'Back to All Fields Overview'}</span>
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    function renderFieldsSummaryGrid() {
+      const container = document.getElementById('fieldsSummaryCards');
+      if (!container) return;
+
+      const fields = ['Khabbaz', 'Kirkuk', 'Bai Hassan', 'Jambur'];
+      const totalAllOil = currentDataset.reduce((acc, c) => acc + c.otProdRate, 0) || 1;
+
+      container.innerHTML = fields.map(f => {
+        const meta = fieldMetadata[f];
+        const rows = currentDataset.filter(d => d.field === f);
+        const wellsCount = new Set(rows.map(r => r.well)).size;
+        const totalOil = rows.reduce((acc, c) => acc + c.otProdRate, 0);
+        const totalGas = rows.reduce((acc, c) => acc + c.gasRate, 0);
+        const avgWHP = rows.length ? (rows.reduce((acc, c) => acc + c.whp, 0) / rows.length) : 0;
+        const sharePct = ((totalOil / totalAllOil) * 100).toFixed(1);
+
+        return `
+          <div onclick="switchField('${f}')" class="bg-slate-900 border border-slate-800 hover:border-${meta.color}-500/60 rounded-2xl p-4 shadow cursor-pointer transition transform hover:-translate-y-1 group">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-${meta.color}-500/20 text-${meta.color}-400 flex items-center justify-center text-sm font-bold">
+                  <i class="fa-solid ${meta.icon}"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-white text-sm group-hover:text-${meta.color}-400 transition">
+                    ${currentLang === 'ar' ? meta.nameAr : meta.nameEn}
+                  </h3>
+                  <span class="text-[10px] text-slate-500">${wellsCount} ${currentLang === 'ar' ? 'آبار' : 'Wells'}</span>
+                </div>
+              </div>
+              <span class="text-[11px] font-mono font-bold text-${meta.color}-400 bg-${meta.color}-500/10 px-2 py-0.5 rounded border border-${meta.color}-500/20">
+                ${sharePct}%
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-800 text-xs">
+              <div>
+                <span class="text-[10px] text-slate-500 block">${currentLang === 'ar' ? 'إنتاج النفط' : 'Oil Prod'}</span>
+                <span class="font-bold font-mono text-emerald-400">${Math.round(totalOil).toLocaleString()}</span>
+                <span class="text-[9px] text-slate-400"> STB/D</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-500 block">${currentLang === 'ar' ? 'معدل الغاز' : 'Gas Flow'}</span>
+                <span class="font-bold font-mono text-amber-400">${totalGas.toFixed(2)}</span>
+                <span class="text-[9px] text-slate-400"> MMCFD</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between text-[11px] text-${meta.color}-400 font-semibold pt-1">
+              <span>${currentLang === 'ar' ? 'استعراض تفاصيل الحقل' : 'Inspect Wells'}</span>
+              <i class="fa-solid fa-arrow-right rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // -------------------------------------------------------------
+    // 6. Filter & Slicers Logic
+    // -------------------------------------------------------------
+    function populateFilterOptions() {
+      // 1. Field Filter
+      const fieldSelect = document.getElementById('fieldFilterSelect');
+      const fields = ['ALL', 'Khabbaz', 'Kirkuk', 'Bai Hassan', 'Jambur'];
+      fieldSelect.innerHTML = fields.map(f => {
+        const label = (f === 'ALL') 
+          ? t('allFieldsOption') 
+          : (currentLang === 'ar' ? fieldMetadata[f].nameAr : fieldMetadata[f].nameEn);
+        return `<option value="${f}" ${f === selectedField ? 'selected' : ''}>${label}</option>`;
+      }).join('');
+
+      // 2. Well Filter based on selected field
+      const wellSelect = document.getElementById('wellFilterSelect');
+      const filteredForWells = (selectedField === 'ALL') 
+        ? currentDataset 
+        : currentDataset.filter(d => d.field === selectedField);
+
+      const uniqueWells = [...new Set(filteredForWells.map(d => d.well))].sort();
+      wellSelect.innerHTML = `<option value="ALL">${t('allWellsOption')} (${uniqueWells.length})</option>`;
+      uniqueWells.forEach(w => {
+        wellSelect.innerHTML += `<option value="${w}">Well ${w}</option>`;
+      });
+
+      // 3. Choke Filter
+      const chokeSelect = document.getElementById('chokeFilterSelect');
+      const uniqueChokes = [...new Set(filteredForWells.map(d => d.choke).filter(Boolean))].sort();
+      chokeSelect.innerHTML = `<option value="ALL">${t('allChokesOption')}</option>`;
       uniqueChokes.forEach(c => {
         chokeSelect.innerHTML += `<option value="${c}">${c}</option>`;
       });
     }
 
-    // Initialize Dashboard
-    function initDashboard() {
-      populateChokeOptions(currentDataset);
-      renderTable(currentDataset);
-      updateKPIs(currentDataset);
-      initCharts(currentDataset);
-    }
-
-    // Filter Logic
     function getFilteredData() {
-      const wellVal = document.getElementById('wellFilter').value;
-      const chokeVal = document.getElementById('chokeFilter').value;
+      const fieldVal = document.getElementById('fieldFilterSelect').value;
+      const wellVal = document.getElementById('wellFilterSelect').value;
+      const chokeVal = document.getElementById('chokeFilterSelect').value;
       const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
 
       return currentDataset.filter(item => {
+        const matchField = (fieldVal === 'ALL' || item.field === fieldVal);
         const matchWell = (wellVal === 'ALL' || item.well === wellVal);
         const matchChoke = (chokeVal === 'ALL' || item.choke === chokeVal);
         const matchSearch = !searchVal || 
           item.well.toLowerCase().includes(searchVal) ||
+          item.field.toLowerCase().includes(searchVal) ||
+          (item.fieldAr && item.fieldAr.includes(searchVal)) ||
           item.date.toLowerCase().includes(searchVal) ||
           item.choke.toLowerCase().includes(searchVal) ||
           item.otProdRate.toString().includes(searchVal);
-        return matchWell && matchChoke && matchSearch;
+
+        return matchField && matchWell && matchChoke && matchSearch;
       });
     }
 
@@ -417,48 +1978,64 @@
       updateCharts(filtered);
     }
 
-    // Render Table
+    // -------------------------------------------------------------
+    // 7. Render Data Table (LTR in English, RTL in Arabic)
+    // -------------------------------------------------------------
     function renderTable(data) {
       const tbody = document.getElementById('dataTableBody');
       const filteredCount = document.getElementById('filteredRowsCount');
       filteredCount.textContent = data.length;
 
       if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="14" class="text-center py-8 text-slate-500 font-semibold">لا توجد بيانات مطابقة لخيارات البحث المحددة</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-slate-500 font-semibold">${t('tableEmpty')}</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.map((row, idx) => {
+      tbody.innerHTML = data.map((row) => {
+        const meta = fieldMetadata[row.field] || {
+          color: 'slate',
+          badgeClass: 'bg-slate-700 text-slate-200'
+        };
+        const fieldName = (currentLang === 'ar' ? (row.fieldAr || row.field) : row.field);
         const devClass = row.deviation >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold';
         const devSign = row.deviation > 0 ? '+' : '';
+
         return `
-          <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
-            <td class="py-2.5 px-3 text-center">
-              <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+          <tr class="hover:bg-slate-800/60 transition border-b border-slate-800/80">
+            <td class="py-2.5 px-3.5 text-start font-medium">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-bold ${meta.badgeClass}">
+                <i class="fa-solid ${meta.icon || 'fa-oil-well'} text-[10px]"></i>
+                ${fieldName}
+              </span>
+            </td>
+            <td class="py-2.5 px-3.5 text-center">
+              <span class="inline-block px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-slate-800 text-slate-200 border border-slate-700">
                 Well ${row.well}
               </span>
             </td>
-            <td class="py-2.5 px-3 font-mono text-slate-300">${row.date}</td>
-            <td class="py-2.5 px-3 text-center font-bold text-amber-300">${row.choke || '-'}</td>
-            <td class="py-2.5 px-3 text-center font-semibold text-slate-400">${row.type}</td>
-            <td class="py-2.5 px-3 text-left font-mono">${row.whp.toLocaleString()}</td>
-            <td class="py-2.5 px-3 text-left font-mono">${row.nocProd.toLocaleString()}</td>
-            <td class="py-2.5 px-3 text-left font-mono font-bold text-emerald-400">${row.otProdRate.toLocaleString()}</td>
-            <td class="py-2.5 px-3 text-left font-mono ${devClass}">${devSign}${row.deviation.toLocaleString()}</td>
-            <td class="py-2.5 px-3 text-left font-mono">${row.prodWHP.toLocaleString()}</td>
-            <td class="py-2.5 px-3 text-left font-mono font-bold text-amber-400">${row.gasRate.toFixed(3)}</td>
-            <td class="py-2.5 px-3 text-left font-mono ${row.water > 0 ? 'text-cyan-400 font-bold' : 'text-slate-500'}">${row.water.toFixed(1)}</td>
-            <td class="py-2.5 px-3 text-left font-mono">${row.spGr.toFixed(3)}</td>
-            <td class="py-2.5 px-3 text-left font-mono font-bold text-purple-300">${row.api.toFixed(1)}°</td>
-            <td class="py-2.5 px-3 text-left font-mono">${row.bsw.toFixed(2)}%</td>
+            <td class="py-2.5 px-3.5 text-start font-mono text-slate-300">${row.date}</td>
+            <td class="py-2.5 px-3.5 text-center font-mono font-bold text-amber-300">${row.choke || '-'}</td>
+            <td class="py-2.5 px-3.5 text-center font-semibold text-slate-400">${row.type}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono text-slate-300">${row.whp.toLocaleString()}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono text-slate-400">${row.nocProd.toLocaleString()}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono font-bold text-emerald-400">${row.otProdRate.toLocaleString()}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono ${devClass}">${devSign}${row.deviation.toLocaleString()}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono text-slate-300">${row.prodWHP.toLocaleString()}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono font-bold text-amber-400">${row.gasRate.toFixed(3)}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono ${row.water > 0 ? 'text-cyan-400 font-bold' : 'text-slate-500'}">${row.water.toFixed(1)}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono text-slate-400">${row.spGr.toFixed(3)}</td>
+            <td class="py-2.5 px-3.5 text-start font-mono font-bold text-purple-300">${row.api.toFixed(1)}°</td>
+            <td class="py-2.5 px-3.5 text-start font-mono text-slate-300">${row.bsw.toFixed(2)}%</td>
           </tr>
         `;
       }).join('');
     }
 
-    // Update KPI Numbers
+    // -------------------------------------------------------------
+    // 8. Update KPI Cards
+    // -------------------------------------------------------------
     function updateKPIs(data) {
-      const uniqueWells = new Set(data.map(d => d.well));
+      const uniqueWells = new Set(data.map(d => `${d.field}_${d.well}`));
       document.getElementById('kpiWellsCount').textContent = uniqueWells.size;
 
       const totalOil = data.reduce((acc, cur) => acc + (Number(cur.otProdRate) || 0), 0);
@@ -475,97 +2052,63 @@
       document.getElementById('kpiTotalWater').innerHTML = `${totalWater.toFixed(1)} <span class="text-xs text-slate-400 font-normal">STB/D</span>`;
     }
 
-    // Charts Configuration
+    // -------------------------------------------------------------
+    // 9. Interactive Visualizations (Charts)
+    // -------------------------------------------------------------
     function initCharts(data) {
       Chart.defaults.color = '#94a3b8';
       Chart.defaults.borderColor = '#1e293b';
-      Chart.defaults.font.family = 'Cairo';
+      Chart.defaults.font.family = (currentLang === 'ar' ? 'Cairo' : 'Inter');
 
-      // 1. Oil & Gas by Well
-      const wellMap = {};
-      data.forEach(d => {
-        if (!wellMap[d.well]) wellMap[d.well] = { oil: 0, gas: 0, count: 0 };
-        wellMap[d.well].oil += d.otProdRate;
-        wellMap[d.well].gas += d.gasRate;
-        wellMap[d.well].count++;
-      });
-      const wellLabels = Object.keys(wellMap).map(w => 'Well ' + w);
-      const wellAvgOil = Object.values(wellMap).map(v => Math.round(v.oil / v.count));
-      const wellAvgGas = Object.values(wellMap).map(v => Number((v.gas / v.count).toFixed(2)));
-
-      const ctx1 = document.getElementById('oilGasChart').getContext('2d');
-      charts.oilGas = new Chart(ctx1, {
+      // 1. Chart 1 Canvas
+      const ctx1 = document.getElementById('chart1Canvas').getContext('2d');
+      charts.chart1 = new Chart(ctx1, {
         type: 'bar',
-        data: {
-          labels: wellLabels,
-          datasets: [
-            {
-              label: 'معدل إنتاج النفط STB/D',
-              data: wellAvgOil,
-              backgroundColor: 'rgba(16, 185, 129, 0.75)',
-              borderColor: '#10b981',
-              borderWidth: 1.5,
-              borderRadius: 6,
-              yAxisID: 'y'
-            },
-            {
-              label: 'معدل الغاز MMSCFD',
-              data: wellAvgGas,
-              backgroundColor: 'rgba(245, 158, 11, 0.85)',
-              borderColor: '#f59e0b',
-              borderWidth: 1.5,
-              borderRadius: 6,
-              yAxisID: 'y1'
-            }
-          ]
-        },
+        data: { labels: [], datasets: [] },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           scales: {
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: { display: true, text: 'Oil (STB/D)' }
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              grid: { drawOnChartArea: false },
-              title: { display: true, text: 'Gas (MMSCFD)' }
-            }
+            y: { position: 'left', title: { display: true, text: 'Oil (STB/D)' } },
+            y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Gas (MMSCFD)' } }
           }
         }
       });
 
-      // 2. Pressure & Choke
-      const ctx2 = document.getElementById('pressureChart').getContext('2d');
-      charts.pressure = new Chart(ctx2, {
+      // 2. Chart 2 Canvas (Donut)
+      const ctx2 = document.getElementById('chart2Canvas').getContext('2d');
+      charts.chart2 = new Chart(ctx2, {
+        type: 'doughnut',
+        data: { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' }
+          }
+        }
+      });
+
+      // 3. Chart 3 Canvas (Deviation Bar)
+      const ctx3 = document.getElementById('chart3Canvas').getContext('2d');
+      charts.chart3 = new Chart(ctx3, {
+        type: 'bar',
+        data: { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { title: { display: true, text: 'Deviation (bbl/d)' } }
+          }
+        }
+      });
+
+      // 4. Chart 4 Canvas (Pressure Line)
+      const ctx4 = document.getElementById('chart4Canvas').getContext('2d');
+      charts.chart4 = new Chart(ctx4, {
         type: 'line',
-        data: {
-          labels: data.map(d => `W${d.well} (${d.choke})`),
-          datasets: [
-            {
-              label: 'ضغـط WHP (Psig)',
-              data: data.map(d => d.whp),
-              borderColor: '#0284c7',
-              backgroundColor: 'rgba(2, 132, 199, 0.1)',
-              tension: 0.3,
-              fill: true
-            },
-            {
-              label: 'ضغـط Prod WH.P',
-              data: data.map(d => d.prodWHP),
-              borderColor: '#a855f7',
-              backgroundColor: 'transparent',
-              borderDash: [5, 5],
-              tension: 0.3
-            }
-          ]
-        },
+        data: { labels: [], datasets: [] },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -575,94 +2118,198 @@
         }
       });
 
-      // 3. Deviation (Actual vs Target)
-      const ctx3 = document.getElementById('deviationChart').getContext('2d');
-      charts.deviation = new Chart(ctx3, {
-        type: 'bar',
-        data: {
-          labels: data.map(d => `W${d.well} [${d.date.split('/')[0]}/${d.date.split('/')[1]}]`),
-          datasets: [
-            {
-              label: 'الانحراف عن المستهدف (Deviation bbl/d)',
-              data: data.map(d => d.deviation),
-              backgroundColor: data.map(d => d.deviation >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(244, 63, 94, 0.7)'),
-              borderColor: data.map(d => d.deviation >= 0 ? '#10b981' : '#f43f5e'),
-              borderWidth: 1,
-              borderRadius: 4
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-
-      // 4. Well Share Doughnut
-      const ctx4 = document.getElementById('wellShareChart').getContext('2d');
-      charts.wellShare = new Chart(ctx4, {
-        type: 'doughnut',
-        data: {
-          labels: wellLabels,
-          datasets: [{
-            data: Object.values(wellMap).map(v => v.oil),
-            backgroundColor: [
-              '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
-            ],
-            borderWidth: 2,
-            borderColor: '#0f172a'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'right' }
-          }
-        }
-      });
+      updateCharts(data);
     }
 
     function updateCharts(data) {
-      if (!charts.oilGas) return;
+      if (!charts.chart1) return;
 
-      const wellMap = {};
-      data.forEach(d => {
-        if (!wellMap[d.well]) wellMap[d.well] = { oil: 0, gas: 0, count: 0 };
-        wellMap[d.well].oil += d.otProdRate;
-        wellMap[d.well].gas += d.gasRate;
-        wellMap[d.well].count++;
-      });
-      const wellLabels = Object.keys(wellMap).map(w => 'Well ' + w);
-      const wellAvgOil = Object.values(wellMap).map(v => Math.round(v.oil / (v.count || 1)));
-      const wellAvgGas = Object.values(wellMap).map(v => Number((v.gas / (v.count || 1)).toFixed(2)));
+      const isAll = (selectedField === 'ALL');
 
-      // Update Chart 1
-      charts.oilGas.data.labels = wellLabels;
-      charts.oilGas.data.datasets[0].data = wellAvgOil;
-      charts.oilGas.data.datasets[1].data = wellAvgGas;
-      charts.oilGas.update();
+      // Update Chart Titles & Subtitles
+      document.querySelector('#chart1Title span').textContent = isAll ? t('chart1TitleAll') : t('chart1TitleWell');
+      document.getElementById('chart1Subtitle').textContent = isAll ? t('chart1SubAll') : t('chart1SubWell');
+      
+      document.querySelector('#chart2Title span').textContent = isAll ? t('chart2TitleAll') : t('chart2TitleWell');
+      document.getElementById('chart2Subtitle').textContent = isAll ? t('chart2SubAll') : t('chart2SubWell');
 
-      // Update Chart 2
-      charts.pressure.data.labels = data.map(d => `W${d.well} (${d.choke})`);
-      charts.pressure.data.datasets[0].data = data.map(d => d.whp);
-      charts.pressure.data.datasets[1].data = data.map(d => d.prodWHP);
-      charts.pressure.update();
+      document.querySelector('#chart3Title span').textContent = isAll ? t('chart3TitleAll') : t('chart3TitleWell');
+      document.getElementById('chart3Subtitle').textContent = isAll ? t('chart3SubAll') : t('chart3SubWell');
 
-      // Update Chart 3
-      charts.deviation.data.labels = data.map(d => `W${d.well} [${d.date}]`);
-      charts.deviation.data.datasets[0].data = data.map(d => d.deviation);
-      charts.deviation.data.datasets[0].backgroundColor = data.map(d => d.deviation >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(244, 63, 94, 0.7)');
-      charts.deviation.data.datasets[0].borderColor = data.map(d => d.deviation >= 0 ? '#10b981' : '#f43f5e');
-      charts.deviation.update();
+      document.querySelector('#chart4Title span').textContent = isAll ? t('chart4TitleAll') : t('chart4TitleWell');
+      document.getElementById('chart4Subtitle').textContent = isAll ? t('chart4SubAll') : t('chart4SubWell');
 
-      // Update Chart 4
-      charts.wellShare.data.labels = wellLabels;
-      charts.wellShare.data.datasets[0].data = Object.values(wellMap).map(v => v.oil);
-      charts.wellShare.update();
+      if (isAll) {
+        // Aggregated by Field
+        const fieldMap = {};
+        ['Khabbaz', 'Kirkuk', 'Bai Hassan', 'Jambur'].forEach(f => {
+          fieldMap[f] = { oil: 0, gas: 0, count: 0, dev: 0, whpSum: 0 };
+        });
+
+        data.forEach(d => {
+          if (fieldMap[d.field]) {
+            fieldMap[d.field].oil += d.otProdRate;
+            fieldMap[d.field].gas += d.gasRate;
+            fieldMap[d.field].dev += d.deviation;
+            fieldMap[d.field].whpSum += d.whp;
+            fieldMap[d.field].count++;
+          }
+        });
+
+        const labels = Object.keys(fieldMap).map(f => currentLang === 'ar' ? fieldMetadata[f].nameAr : fieldMetadata[f].nameEn);
+        const oilData = Object.values(fieldMap).map(v => Math.round(v.oil));
+        const gasData = Object.values(fieldMap).map(v => Number(v.gas.toFixed(2)));
+        const devData = Object.values(fieldMap).map(v => Math.round(v.dev));
+        const avgWhpData = Object.values(fieldMap).map(v => v.count ? Math.round(v.whpSum / v.count) : 0);
+
+        // Chart 1: Field Production Bar
+        charts.chart1.data.labels = labels;
+        charts.chart1.data.datasets = [
+          {
+            label: currentLang === 'ar' ? 'إنتاج النفط (STB/D)' : 'Oil Prod (STB/D)',
+            data: oilData,
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderColor: '#10b981',
+            borderWidth: 1.5,
+            borderRadius: 8,
+            yAxisID: 'y'
+          },
+          {
+            label: currentLang === 'ar' ? 'معدل الغاز (MMSCFD)' : 'Gas Flow (MMSCFD)',
+            data: gasData,
+            backgroundColor: 'rgba(245, 158, 11, 0.85)',
+            borderColor: '#f59e0b',
+            borderWidth: 1.5,
+            borderRadius: 8,
+            yAxisID: 'y1'
+          }
+        ];
+        charts.chart1.update();
+
+        // Chart 2: Field Share Donut
+        charts.chart2.data.labels = labels;
+        charts.chart2.data.datasets = [{
+          data: oilData,
+          backgroundColor: ['#0284c7', '#f59e0b', '#10b981', '#8b5cf6'],
+          borderWidth: 2,
+          borderColor: '#0f172a'
+        }];
+        charts.chart2.update();
+
+        // Chart 3: Field Deviation
+        charts.chart3.data.labels = labels;
+        charts.chart3.data.datasets = [{
+          label: currentLang === 'ar' ? 'صافي الانحراف عن المستهدف (STB/D)' : 'Net Target Deviation (STB/D)',
+          data: devData,
+          backgroundColor: devData.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.75)' : 'rgba(244, 63, 94, 0.75)'),
+          borderColor: devData.map(v => v >= 0 ? '#10b981' : '#f43f5e'),
+          borderWidth: 1.5,
+          borderRadius: 6
+        }];
+        charts.chart3.update();
+
+        // Chart 4: Average WHP Pressure by Field
+        charts.chart4.data.labels = labels;
+        charts.chart4.data.datasets = [{
+          label: currentLang === 'ar' ? 'متوسط ضغط رأس البئر (Psig)' : 'Avg Reservoir WHP (Psig)',
+          data: avgWhpData,
+          borderColor: '#38bdf8',
+          backgroundColor: 'rgba(56, 189, 248, 0.15)',
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: '#0284c7',
+          pointRadius: 5
+        }];
+        charts.chart4.update();
+
+      } else {
+        // Filtered by Specific Field / Well
+        const wellMap = {};
+        data.forEach(d => {
+          const key = `W-${d.well}`;
+          if (!wellMap[key]) wellMap[key] = { oil: 0, gas: 0, count: 0 };
+          wellMap[key].oil += d.otProdRate;
+          wellMap[key].gas += d.gasRate;
+          wellMap[key].count++;
+        });
+
+        const wellLabels = Object.keys(wellMap);
+        const wellAvgOil = Object.values(wellMap).map(v => Math.round(v.oil / (v.count || 1)));
+        const wellAvgGas = Object.values(wellMap).map(v => Number((v.gas / (v.count || 1)).toFixed(2)));
+
+        // Chart 1: Well Bar
+        charts.chart1.data.labels = wellLabels;
+        charts.chart1.data.datasets = [
+          {
+            label: currentLang === 'ar' ? 'إنتاج النفط (STB/D)' : 'Oil Prod (STB/D)',
+            data: wellAvgOil,
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderColor: '#10b981',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            yAxisID: 'y'
+          },
+          {
+            label: currentLang === 'ar' ? 'معدل الغاز (MMSCFD)' : 'Gas Flow (MMSCFD)',
+            data: wellAvgGas,
+            backgroundColor: 'rgba(245, 158, 11, 0.85)',
+            borderColor: '#f59e0b',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            yAxisID: 'y1'
+          }
+        ];
+        charts.chart1.update();
+
+        // Chart 2: Well Donut
+        charts.chart2.data.labels = wellLabels;
+        charts.chart2.data.datasets = [{
+          data: Object.values(wellMap).map(v => v.oil),
+          backgroundColor: ['#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'],
+          borderWidth: 2,
+          borderColor: '#0f172a'
+        }];
+        charts.chart2.update();
+
+        // Chart 3: Deviation
+        charts.chart3.data.labels = data.map(d => `W${d.well} (${d.choke})`);
+        charts.chart3.data.datasets = [{
+          label: currentLang === 'ar' ? 'الانحراف (Deviation)' : 'Deviation (bbl/d)',
+          data: data.map(d => d.deviation),
+          backgroundColor: data.map(d => d.deviation >= 0 ? 'rgba(16, 185, 129, 0.75)' : 'rgba(244, 63, 94, 0.75)'),
+          borderColor: data.map(d => d.deviation >= 0 ? '#10b981' : '#f43f5e'),
+          borderWidth: 1.5,
+          borderRadius: 4
+        }];
+        charts.chart3.update();
+
+        // Chart 4: WHP Curve
+        charts.chart4.data.labels = data.map(d => `W${d.well} (${d.choke})`);
+        charts.chart4.data.datasets = [
+          {
+            label: 'WHP (Psig)',
+            data: data.map(d => d.whp),
+            borderColor: '#0284c7',
+            backgroundColor: 'rgba(2, 132, 199, 0.1)',
+            tension: 0.35,
+            fill: true
+          },
+          {
+            label: 'Prod WH.P',
+            data: data.map(d => d.prodWHP),
+            borderColor: '#a855f7',
+            borderDash: [5, 5],
+            backgroundColor: 'transparent',
+            tension: 0.35
+          }
+        ];
+        charts.chart4.update();
+      }
     }
 
-    // Excel Upload Handler using SheetJS
+    // -------------------------------------------------------------
+    // 10. Excel / CSV File Upload Handler
+    // -------------------------------------------------------------
     document.getElementById('excelFileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -673,78 +2320,203 @@
           const data = new Uint8Array(evt.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           
-          // Read first sheet or sheet with Natural Flow / Khabbaz
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-          // Parse rows into standard format
+          if (!jsonData || jsonData.length < 2) {
+            alert(currentLang === 'ar' ? 'الملف فارغ أو لا يحتوي على بيانات صالحة.' : 'File is empty or contains no valid rows.');
+            return;
+          }
+
+          const headers = jsonData[0].map(h => String(h || '').trim().toLowerCase());
+          
+          // Detect field column or default to selected field
+          let fieldIdx = headers.findIndex(h => h.includes('field') || h.includes('حقل'));
+          let wellIdx = headers.findIndex(h => h.includes('well') || h.includes('بئر'));
+          let dateIdx = headers.findIndex(h => h.includes('date') || h.includes('تاريخ'));
+          let chokeIdx = headers.findIndex(h => h.includes('choke') || h.includes('خانق'));
+          let otProdIdx = headers.findIndex(h => h.includes('ot prod') || h.includes('prod rate') || h.includes('stb/d'));
+          let nocIdx = headers.findIndex(h => h.includes('noc') || h.includes('target'));
+          let whpIdx = headers.findIndex(h => h.includes('whp') || h.includes('psig'));
+          let gasIdx = headers.findIndex(h => h.includes('gas') || h.includes('mmscfd'));
+          let waterIdx = headers.findIndex(h => h.includes('water') || h.includes('ماء'));
+          let apiIdx = headers.findIndex(h => h.includes('api'));
+          let bswIdx = headers.findIndex(h => h.includes('bsw') || h.includes('bs&w'));
+
+          if (wellIdx === -1) wellIdx = 0;
+          if (dateIdx === -1) dateIdx = 1;
+          if (chokeIdx === -1) chokeIdx = 2;
+          if (whpIdx === -1) whpIdx = 5;
+          if (nocIdx === -1) nocIdx = 6;
+          if (otProdIdx === -1) otProdIdx = 7;
+          if (gasIdx === -1) gasIdx = 10;
+
           const parsedRows = [];
           for (let i = 1; i < jsonData.length; i++) {
             const r = jsonData[i];
-            if (!r || r.length < 5) continue;
-            // Detect well and data
-            const well = String(r[0] || '').trim();
-            const date = String(r[1] || '').trim();
-            const choke = String(r[2] || '').trim();
-            const otProd = parseFloat(r[6] || r[7] || 0) || 0;
-            const gas = parseFloat(r[12] || r[13] || 0) || 0;
+            if (!r || r.length < 3) continue;
 
-            if (well || date) {
-              parsedRows.push({
-                well: well || "B" + i,
-                date: date || "-",
-                choke: choke || "-",
-                otChoke: r[3] || "-",
-                type: r[4] || "T",
-                whp: parseFloat(r[5]) || 0,
-                chokeUpPress: "NA",
-                nocProd: parseFloat(r[6]) || 0,
-                otProdRate: otProd,
-                deviation: parseFloat(r[8]) || (otProd - (parseFloat(r[6]) || 0)),
-                usPress: "",
-                dsPress: "",
-                prodWHP: parseFloat(r[11]) || 0,
-                gasRate: gas,
-                water: parseFloat(r[13]) || 0,
-                spGr: parseFloat(r[14]) || 0.85,
-                api: parseFloat(r[15]) || 35,
-                bsw: parseFloat(r[16]) || 0
-              });
-            }
+            let fieldVal = (fieldIdx !== -1 && r[fieldIdx]) ? String(r[fieldIdx]).trim() : (selectedField === 'ALL' ? 'Khabbaz' : selectedField);
+            // Standardize field name
+            if (fieldVal.toLowerCase().includes('khab') || fieldVal.includes('خباز')) fieldVal = 'Khabbaz';
+            else if (fieldVal.toLowerCase().includes('kirk') || fieldVal.includes('كركوك')) fieldVal = 'Kirkuk';
+            else if (fieldVal.toLowerCase().includes('hassan') || fieldVal.includes('حسن')) fieldVal = 'Bai Hassan';
+            else if (fieldVal.toLowerCase().includes('jamb') || fieldVal.includes('جمبور')) fieldVal = 'Jambur';
+
+            const wellVal = String(r[wellIdx] || `W-${i}`).trim();
+            const dateVal = String(r[dateIdx] || '-').trim();
+            const chokeVal = String(r[chokeIdx] || '-').trim();
+            const whpVal = parseFloat(r[whpIdx]) || 1200;
+            const nocVal = parseFloat(r[nocIdx]) || 1000;
+            const otVal = parseFloat(r[otProdIdx]) || 1500;
+            const gasVal = parseFloat(r[gasIdx]) || 2.5;
+            const waterVal = parseFloat(r[waterIdx]) || 0;
+            const apiVal = parseFloat(r[apiIdx]) || 35.0;
+            const bswVal = parseFloat(r[bswIdx]) || 0.1;
+
+            parsedRows.push({
+              field: fieldVal,
+              fieldAr: (fieldMetadata[fieldVal] ? fieldMetadata[fieldVal].nameAr : fieldVal),
+              well: wellVal,
+              date: dateVal,
+              choke: chokeVal,
+              otChoke: "-",
+              type: "T",
+              whp: whpVal,
+              nocProd: nocVal,
+              otProdRate: otVal,
+              deviation: Math.round(otVal - nocVal),
+              prodWHP: Math.round(whpVal * 0.96),
+              gasRate: gasVal,
+              water: waterVal,
+              spGr: 0.85,
+              api: apiVal,
+              bsw: bswVal
+            });
           }
 
           if (parsedRows.length > 0) {
             currentDataset = parsedRows;
-            document.getElementById('currentFileName').textContent = `تم رفع الملف: ${file.name} بنجاح (${parsedRows.length} سجل)`;
-            document.getElementById('recordCountBadge').textContent = `${parsedRows.length} سجل بئر`;
-            populateChokeOptions(currentDataset);
+            renderFieldsSummaryGrid();
+            populateFilterOptions();
             applyFilters();
-            alert(`تم استيراد ${parsedRows.length} سجلاً بنجاح من ملف ${file.name}!`);
+            alert(currentLang === 'ar' 
+              ? `تم تحميل ${parsedRows.length} سجلاً بنجاح من ملف ${file.name}!` 
+              : `Successfully imported ${parsedRows.length} records from ${file.name}!`);
           } else {
-            alert('تم قراءة الملف بنجاح ولكن لم يتم العثور على أسطر صالحة كبيانات آبار.');
+            alert(currentLang === 'ar' ? 'لم يتم العثور على أسطر صالحة.' : 'No valid data rows found in file.');
           }
         } catch (err) {
           console.error(err);
-          alert('حدث خطأ أثناء قراءة ملف الإكسل: ' + err.message);
+          alert((currentLang === 'ar' ? 'خطأ في قراءة ملف الإكسل: ' : 'Error parsing Excel file: ') + err.message);
         }
       };
       reader.readAsArrayBuffer(file);
     });
 
-    // Event Listeners for Filters
-    document.getElementById('wellFilter').addEventListener('change', applyFilters);
-    document.getElementById('chokeFilter').addEventListener('change', applyFilters);
+    // -------------------------------------------------------------
+    // 11. CSV Export Functionality
+    // -------------------------------------------------------------
+    document.getElementById('exportCsvBtn').addEventListener('click', () => {
+      const dataToExport = getFilteredData();
+      if (!dataToExport.length) return;
+
+      const headers = ["Field", "Field_Ar", "Well_No", "WT_Date", "Choke_Size", "Prod_Type", "WHP_Psig", "NOC_Prod_bbld", "OT_Prod_Rate_STBD", "Deviation_STBD", "Prod_WHP_Psig", "Gas_Rate_MMSCFD", "Water_STBD", "Sp_Gr", "API", "BSW_Percent"];
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n";
+
+      dataToExport.forEach(r => {
+        const row = [
+          `"${r.field}"`, `"${r.fieldAr}"`, `"${r.well}"`, `"${r.date}"`, `"${r.choke}"`, `"${r.type}"`,
+          r.whp, r.nocProd, r.otProdRate, r.deviation, r.prodWHP, r.gasRate, r.water, r.spGr, r.api, r.bsw
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Oil_Fields_Data_Export_${selectedField}_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // -------------------------------------------------------------
+    // 12. Power BI Modal Logic & DAX Copy
+    // -------------------------------------------------------------
+    const pbiModal = document.getElementById('powerBiModal');
+    document.getElementById('openPowerBiBtn').addEventListener('click', () => pbiModal.classList.remove('hidden'));
+    document.getElementById('closePowerBiModal').addEventListener('click', () => pbiModal.classList.add('hidden'));
+
+    // Modal Tabs
+    document.querySelectorAll('.pbi-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.pbi-tab').forEach(t => {
+          t.classList.remove('text-amber-400', 'border-b-2', 'border-amber-400');
+          t.classList.add('text-slate-400');
+        });
+        this.classList.remove('text-slate-400');
+        this.classList.add('text-amber-400', 'border-b-2', 'border-amber-400');
+
+        const target = this.getAttribute('data-tab');
+        document.getElementById('pbiTabContent-dax').classList.add('hidden');
+        document.getElementById('pbiTabContent-embed').classList.add('hidden');
+        document.getElementById('pbiTabContent-export').classList.add('hidden');
+        document.getElementById(`pbiTabContent-${target}`).classList.remove('hidden');
+      });
+    });
+
+    // Download CSV in Modal
+    document.getElementById('downloadPbiCsvBtn').addEventListener('click', () => {
+      const link = document.createElement("a");
+      link.setAttribute("href", "All_Fields_Oil_Gas_Data.csv");
+      link.setAttribute("download", "All_Fields_Oil_Gas_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Load Power BI iframe
+    document.getElementById('saveEmbedUrlBtn').addEventListener('click', () => {
+      const url = document.getElementById('pbiEmbedUrlInput').value.trim();
+      const container = document.getElementById('pbiEmbedContainer');
+      if (url) {
+        container.innerHTML = `<iframe src="${url}" class="w-full h-full border-0 rounded-xl" allowFullScreen="true"></iframe>`;
+      }
+    });
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert(currentLang === 'ar' ? 'تم نسخ معادلة DAX بنجاح!' : 'DAX formula copied to clipboard!');
+      }).catch(err => {
+        console.error(err);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 13. Event Listeners & Initialization
+    // -------------------------------------------------------------
+    document.getElementById('langToggleBtn').addEventListener('click', toggleLanguage);
+    document.getElementById('fieldFilterSelect').addEventListener('change', function() {
+      switchField(this.value);
+    });
+    document.getElementById('wellFilterSelect').addEventListener('change', applyFilters);
+    document.getElementById('chokeFilterSelect').addEventListener('change', applyFilters);
     document.getElementById('searchInput').addEventListener('input', applyFilters);
-    document.getElementById('resetFilters').addEventListener('click', () => {
-      document.getElementById('wellFilter').value = 'ALL';
-      document.getElementById('chokeFilter').value = 'ALL';
+    document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+      document.getElementById('wellFilterSelect').value = 'ALL';
+      document.getElementById('chokeFilterSelect').value = 'ALL';
       document.getElementById('searchInput').value = '';
       applyFilters();
     });
 
-    // Run on Load
-    window.addEventListener('DOMContentLoaded', initDashboard);
+    // Initialize application on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Always initialize with stored language (default 'en')
+      setLanguage(currentLang);
+      initCharts(currentDataset);
+    });
   </script>
 </body>
 </html>

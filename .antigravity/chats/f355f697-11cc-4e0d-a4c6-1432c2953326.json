@@ -232,6 +232,18 @@
       "created_at": "2026-11-20T00:10:39.699Z",
       "sender": "ios",
       "is_cancelled": false
+    },
+    {
+      "id": "f051b998-4fb1-40d1-ae82-cf4711d85ab5",
+      "role": "user",
+      "content": "الموقع ممتاز بس لو نسوي لكل الحقول مجتمعة وتفصيل كل حقل داخلها ويفضل ان يكون الاساس بالانكليزي والمتاح ترجمته للعربية لان جدول الابار باقي من اليمين لليسار حتى بالانكليزي والمفروض يكون بالعكس",
+      "status": "pending",
+      "model": "gemini-3.8-flash-low",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-11-24T09:07:47.422Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
